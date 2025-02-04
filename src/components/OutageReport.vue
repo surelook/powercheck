@@ -4,7 +4,7 @@ import type { OutageDetail } from '../types/outage'
 import OutageItem from './OutageItem.vue'
 import SummaryValue from './SummaryValue.vue'
 import { parseDate } from '../util/parseDate.ts'
-import { getRelativeTime } from '../util/getRelativeTime.ts'
+import RelativeDate from './RelativeDate.vue'
 
 const plannerGroupFilter = ref<string | null>(null)
 const sortOption = ref('newest')
@@ -135,7 +135,7 @@ const uniquePlannerGroups = computed(() => {
 </script>
 
 <template>
-  <div class="text-gray-400 p-4 text-xs">Updated {{ getRelativeTime(buildDate) }}</div>
+  <div class="text-gray-400 p-4 text-xs">Updated <RelativeDate :date="buildDate" /> from <a href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a></div>
   <div class="flex flex-wrap gap-12 p-4 py-8">
     <SummaryValue label="Active Faults" :value="activeFaults.length.toLocaleString()" />
     <SummaryValue label="Customers Affected" :value="numberCustomersAffected.toLocaleString()" />
@@ -143,14 +143,20 @@ const uniquePlannerGroups = computed(() => {
       v-if="mostCustomersAffected"
       label="Largest Fault"
       :value="mostCustomersAffected.location"
-      :secondaryValue="mostCustomersAffected.numCustAffected?.toLocaleString() + ' customers'"
-    />
+    >
+      <template #secondaryValue>
+        {{ mostCustomersAffected.numCustAffected?.toLocaleString() + ' customers'}}
+      </template>
+    </SummaryValue>
     <SummaryValue
       v-if="newestFault"
       label="Newest Fault"
       :value="newestFault.location"
-      :secondaryValue="getRelativeTime(parseDate(newestFault.startTime))"
-    />
+    >
+      <template #secondaryValue>
+        <RelativeDate :date="parseDate(newestFault.startTime)" />
+      </template>
+    </SummaryValue>
   </div>
 
   <div class="flex flex-wrap gap-4 p-4 items-center text-sm text-gray-400">

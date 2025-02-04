@@ -1,12 +1,6 @@
-export const getRelativeTime = (date: Date): string => {
+export const getRelativeTime = (date: Date) => {
   const now = new Date()
-  // Calculate the difference in milliseconds.
-  // A positive diff means the date is in the future, and a negative diff means it’s in the past.
   const diffMs = date.getTime() - now.getTime()
-
-  // Compute the differences in various units.
-  // Note that these values may be negative, which is fine: the Intl.RelativeTimeFormat
-  // will format them as “in X” for positive values (future) and “X ago” for negative ones (past).
   const diffSeconds = Math.floor(diffMs / 1000)
   const diffMinutes = Math.floor(diffSeconds / 60)
   const diffHours = Math.floor(diffMinutes / 60)
@@ -14,15 +8,43 @@ export const getRelativeTime = (date: Date): string => {
   const diffMonths = Math.floor(diffDays / 30)
 
   const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+  let formatted: string
 
-  // If the difference is very small (less than 5 seconds), display “just now”
-  if (Math.abs(diffSeconds) < 5) return 'just now'
-  if (Math.abs(diffSeconds) < 60) return rtf.format(diffSeconds, 'seconds')
-  if (Math.abs(diffMinutes) < 60) return rtf.format(diffMinutes, 'minutes')
-  if (Math.abs(diffHours) < 24) return rtf.format(diffHours, 'hours')
-  if (Math.abs(diffDays) < 30) return rtf.format(diffDays, 'days')
-  if (Math.abs(diffMonths) < 12) return rtf.format(diffMonths, 'months')
+  if (Math.abs(diffSeconds) < 5) {
+    formatted = 'just now'
+  } else if (Math.abs(diffSeconds) < 60) {
+    formatted = rtf.format(diffSeconds, 'seconds')
+  } else if (Math.abs(diffMinutes) < 60) {
+    formatted = rtf.format(diffMinutes, 'minutes')
+  } else {
+    if (diffMs > 0) {
+      if (diffHours < 48) {
+        formatted = rtf.format(diffHours, 'hours')
+      } else if (diffDays < 14) {
+        formatted = rtf.format(diffDays, 'days')
+      } else if (diffDays < 30) {
+        formatted = rtf.format(diffDays, 'days')
+      } else if (diffMonths < 12) {
+        formatted = rtf.format(diffMonths, 'months')
+      } else {
+        formatted = date.toLocaleDateString('en-IE')
+      }
+    } else {
+      if (Math.abs(diffHours) < 24) {
+        formatted = rtf.format(diffHours, 'hours')
+      } else if (Math.abs(diffDays) < 7) {
+        formatted = rtf.format(diffDays, 'days')
+      } else if (Math.abs(diffDays) < 30) {
+        formatted = rtf.format(diffDays, 'days')
+      } else if (Math.abs(diffMonths) < 12) {
+        formatted = rtf.format(diffMonths, 'months')
+      } else {
+        formatted = date.toLocaleDateString('en-IE')
+      }
+    }
+  }
 
-  // For differences longer than a year, fallback to a full date.
-  return date.toLocaleDateString('en-IE')
+  const title = date.toLocaleString('en-IE')
+
+  return { text: formatted, title }
 }

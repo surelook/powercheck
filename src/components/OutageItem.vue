@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import type { OutageDetail } from '@/types/outage'
 import { parseDate } from '@/util/parseDate'
-import { getRelativeTime } from '@/util/getRelativeTime'
+import RelativeDate from './RelativeDate.vue'
 
 const repetitiveMessages = [
   'We are aware of the outage and are working to restore power as quickly as possible.',
@@ -36,11 +36,11 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="border rounded-lg bg-gray-800 border-gray-700">
-    <div class="p-4 pt-2 pb-3">
+  <div class="flex flex-col border rounded-lg bg-gray-800 border-gray-700">
+    <div class="p-4 pt-2 pb-3 flex-grow">
       <div class="flex justify-between gap-4">
         <span :class="textColor">{{ outage.outageType }}</span>
-        <span class="text-gray-400 text-sm"> {{ getRelativeTime(parseDate(outage.startTime)) }}</span>
+        <span class="text-gray-400 text-sm"> <RelativeDate :date="parseDate(outage.startTime)" /></span>
       </div>
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
         <span>{{ outage.location }}</span>
@@ -58,10 +58,10 @@ const props = defineProps<{
     <div class="p-4 py-1 rounded-lg bg-gray-700">
       <p class="font-normal text-gray-400">
         <span v-if="outage.outageType === 'Restored'">
-          Restored {{ getRelativeTime(parseDate(outage.restoreTime)) }}
+          Restored <RelativeDate :date="parseDate(outage.restoreTime)" />
         </span>
         <span v-else>
-          Estimated restore {{ getRelativeTime(parseDate(outage.estRestoreTime)) }}
+          Estimated restore <RelativeDate :date="parseDate(outage.estRestoreTime)" />
         </span>
       </p>
     </div>
