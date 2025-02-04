@@ -48,7 +48,7 @@ const props = defineProps<{
       </h5>
 
       <p class="font-normal text-gray-400">
-        {{ outage.numCustAffected.toLocaleString() }} Customers Affected
+        {{ outage.numCustAffected.toLocaleString() }} customers affected
       </p>
       <p v-if="!repetitiveMessages.indexOf(outage.statusMessage)" class="font-normal text-gray-400">
         {{ outage.statusMessage }}
