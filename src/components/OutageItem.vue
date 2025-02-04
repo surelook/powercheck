@@ -38,7 +38,7 @@ const props = defineProps<{
 <template>
   <div class="border rounded-lg shadow-sm bg-gray-800 border-gray-700">
     <div class="p-4 pt-2 pb-3">
-      <div>
+      <div class="flex justify-between gap-4">
         <span :class="textColor">{{ outage.outageType }}</span>
         <span class="text-gray-400 text-sm"> {{ getRelativeTime(parseDate(outage.startTime)) }}</span>
       </div>
