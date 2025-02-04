@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import OutageReport from './components/OutageReport.vue'
 import type { OutageDetail } from './types/outage'
+import './analytics'
 
 const files = import.meta.glob<{ default: OutageDetail }>('../data/details/*.json', { eager: true })
 
