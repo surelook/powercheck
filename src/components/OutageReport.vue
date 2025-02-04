@@ -169,7 +169,7 @@ const uniquePlannerGroups = computed(() => {
     </div>
 
     <div class="flex items-center gap-2">
-      <label class="font-semibold">Type:</label>
+      <label class="font-semibold">Status:</label>
       <select v-model="typeFilter" class="bg-gray-800 border border-gray-700 text-white p-2 rounded">
         <option :value="null">All</option>
         <option v-for="type in ['Fault', 'Planned', 'Restored']" :key="type" :value="type">
