@@ -58,10 +58,10 @@ const props = defineProps<{
     <div class="p-4 py-1 rounded-lg bg-gray-700">
       <p class="font-normal text-gray-400">
         <span v-if="outage.outageType === 'Restored'">
-          Restored: {{ parseDate(outage.restoreTime).toLocaleString('en-IE') }}
+          Restored {{ getRelativeTime(parseDate(outage.restoreTime)) }}
         </span>
         <span v-else>
-          Estimated Restore: {{ parseDate(outage.estRestoreTime).toLocaleString('en-IE') }}
+          Estimated restore {{ getRelativeTime(parseDate(outage.estRestoreTime)) }}
         </span>
       </p>
     </div>
