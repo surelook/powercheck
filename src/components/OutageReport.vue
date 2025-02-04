@@ -135,7 +135,7 @@ const uniquePlannerGroups = computed(() => {
 </script>
 
 <template>
-  <div class="text-gray-400 p-4 text-xs">Updated <RelativeDate :date="buildDate" /> from <a href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a></div>
+  <div class="text-gray-400 p-4 text-xs">Updated <RelativeDate :date="buildDate" /> from <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a></div>
   <div class="flex flex-wrap gap-12 p-4 py-8">
     <SummaryValue label="Active Faults" :value="activeFaults.length.toLocaleString()" />
     <SummaryValue label="Customers Affected" :value="numberCustomersAffected.toLocaleString()" />
