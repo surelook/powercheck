@@ -156,11 +156,11 @@ const uniquePlannerGroups = computed(() => {
   <div class="flex flex-wrap gap-4 p-4 items-center text-sm text-gray-400">
     <div class="flex items-center gap-2">
       <label class="font-semibold">Search:</label>
-      <input v-model="search" type="text" class="bg-gray-800 text-white p-2 rounded" />
+      <input v-model="search" type="text" class="bg-gray-800 border border-gray-700 text-white p-2 rounded" />
     </div>
     <div class="flex items-center gap-2">
       <label class="font-semibold">Planner Group:</label>
-      <select v-model="plannerGroupFilter" class="bg-gray-800 text-white p-2 rounded">
+      <select v-model="plannerGroupFilter" class="bg-gray-800 border border-gray-700 text-white p-2 rounded">
         <option :value="null">All</option>
         <option v-for="group in uniquePlannerGroups" :key="group" :value="group">
           {{ group }}
@@ -170,7 +170,7 @@ const uniquePlannerGroups = computed(() => {
 
     <div class="flex items-center gap-2">
       <label class="font-semibold">Type:</label>
-      <select v-model="typeFilter" class="bg-gray-800 text-white p-2 rounded">
+      <select v-model="typeFilter" class="bg-gray-800 border border-gray-700 text-white p-2 rounded">
         <option :value="null">All</option>
         <option v-for="type in ['Fault', 'Planned', 'Restored']" :key="type" :value="type">
           {{ type }}
@@ -180,7 +180,7 @@ const uniquePlannerGroups = computed(() => {
 
     <div class="flex items-center gap-2">
       <label class="font-semibold">Sort by:</label>
-      <select v-model="sortOption" class="bg-gray-800 text-white p-2 rounded">
+      <select v-model="sortOption" class="bg-gray-800 border border-gray-700 text-white p-2 rounded">
         <option value="location-asc">A - Z</option>
         <option value="location-desc">Z - A</option>
         <option value="newest">Newest Outages</option>
@@ -193,7 +193,7 @@ const uniquePlannerGroups = computed(() => {
 
     </div>
     <button
-      class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded cursor-pointer disabled:opacity-50 disabled:cursor-default"
+      class="bg-indigo-500 hover:bg-indigo-700 border border-indigo-600 text-white font-bold py-2 px-4 rounded cursor-pointer disabled:opacity-50 disabled:cursor-default"
       @click="resetFilters"
       :disabled="!isFiltersActive"
     >
