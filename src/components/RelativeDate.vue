@@ -4,17 +4,17 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { getRelativeTime } from '@/util/getRelativeTime'
+import { getFriendlyTime } from '@/util/getFriendlyTime'
 
 const props = defineProps<{ date: Date }>()
 
-const relativeTime = ref(getRelativeTime(props.date))
+const relativeTime = ref(getFriendlyTime(props.date))
 
 let intervalId: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   intervalId = setInterval(() => {
-    relativeTime.value = getRelativeTime(props.date)
+    relativeTime.value = getFriendlyTime(props.date)
   }, 60 * 1000) // Update every 60 seconds
 })
 
