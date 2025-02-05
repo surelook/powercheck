@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { getFriendlyTime } from '@/util/getFriendlyTime'
+import { getFriendlyTime } from '@/util/getFriendlyTime.ts'
 
 const props = defineProps<{ date: Date }>()
 
