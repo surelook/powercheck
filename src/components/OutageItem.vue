@@ -42,7 +42,7 @@ const props = defineProps<{
         <span class="text-sm" :class="textColor">{{ outage.outageType }}</span>
         <span class="text-gray-400 text-sm"><RelativeDate :date="parseDate(outage.startTime)" /></span>
       </div>
-      <h5 class="my-3 text-xl font-bold tracking-tight text-white">
+      <h5 class="my-3 mt-1 text-2xl font-bold text-white">
         <span>{{ outage.location }}</span>
       </h5>
 
