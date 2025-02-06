@@ -5,6 +5,7 @@ import OutageItem from './OutageItem.vue'
 import SummaryValue from './SummaryValue.vue'
 import { parseDate } from '../util/parseDate.ts'
 import RelativeDate from './RelativeDate.vue'
+import type { PlannerGroup } from '@/types/planner-group.js'
 
 const plannerGroupFilter = ref<string | null>(null)
 const sortOption = ref('newest')
@@ -12,7 +13,8 @@ const typeFilter = ref<'Fault' | 'Planned' | 'Restored' | null>(null)
 const search = ref('')
 
 const props = defineProps<{
-  outages: OutageDetail[]
+  outages: OutageDetail[],
+  plannerGroups: PlannerGroup[]
 }>()
 
 const buildDate = computed(() => {
@@ -123,15 +125,15 @@ const sortedOutages = computed(() => {
   })
 })
 
-const uniquePlannerGroups = computed(() => {
-  return [
-    ...new Set(
-      props.outages
-        .flatMap((outage) => outage.plannerGroup.split(','))
-        .map((group) => group.trim()), // Trim whitespace for consistency
-    ),
-  ].sort()
-})
+// const uniquePlannerGroups = computed(() => {
+//   return [
+//     ...new Set(
+//       props.outages
+//         .flatMap((outage) => outage.plannerGroup.split(','))
+//         .map((group) => group.trim()), // Trim whitespace for consistency
+//     ),
+//   ].sort()
+// })
 </script>
 
 <template>
@@ -168,8 +170,8 @@ const uniquePlannerGroups = computed(() => {
       <label class="font-semibold">Planner Group:</label>
       <select v-model="plannerGroupFilter" class="bg-gray-800 border border-gray-700 text-white p-2 rounded">
         <option :value="null">All</option>
-        <option v-for="group in uniquePlannerGroups" :key="group" :value="group">
-          {{ group }}
+        <option v-for="plannerGroup in plannerGroups" :key="plannerGroup.name" :value="plannerGroup.name">
+          {{ plannerGroup.name }}
         </option>
       </select>
     </div>
@@ -206,7 +208,14 @@ const uniquePlannerGroups = computed(() => {
       Reset Filters
     </button>
   </div>
+
   <div class="grid gap-4 p-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
     <OutageItem v-for="outage in sortedOutages" :key="outage.outageId" :outage="outage" />
+
+    <div v-if="sortedOutages.length < 1" class="flex flex-col border rounded-lg bg-gray-800 border-gray-700 p-4">
+      <p class="text-gray-400">
+        There are no results matching your search..
+      </p>
+    </div>
   </div>
 </template>

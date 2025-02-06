@@ -11,7 +11,7 @@
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
-    "postinstall": "node ./scripts/fetchConfig.js && node ./scripts/fetchOutages.js && node ./scripts/fetchDetails.js"
+    "postinstall": "node ./scripts/fetchConfig.js && node ./scripts/fetchPlannerGroups.js && node ./scripts/fetchDetailsByPlannerGroup.js"
   },
   "dependencies": {
     "@analytics/google-analytics": "^1.1.0",

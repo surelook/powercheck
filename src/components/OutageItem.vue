@@ -39,18 +39,26 @@ const props = defineProps<{
   <div class="flex flex-col border rounded-lg bg-gray-800 border-gray-700">
     <div class="p-4 pt-2 pb-3 flex-grow">
       <div class="flex justify-between gap-4">
-        <span :class="textColor">{{ outage.outageType }}</span>
-        <span class="text-gray-400 text-sm"> <RelativeDate :date="parseDate(outage.startTime)" /></span>
+        <span class="text-sm" :class="textColor">{{ outage.outageType }}</span>
+        <span class="text-gray-400 text-sm"><RelativeDate :date="parseDate(outage.startTime)" /></span>
       </div>
-      <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
+      <h5 class="my-3 text-xl font-bold tracking-tight text-white">
         <span>{{ outage.location }}</span>
-        <span class="text-gray-400 text-lg"> {{ plannerGroupFormatted }}</span>
       </h5>
 
-      <p class="font-normal text-gray-400">
-        {{ outage.numCustAffected.toLocaleString() }} customers affected
-      </p>
-      <p v-if="!repetitiveMessages.indexOf(outage.statusMessage)" class="font-normal text-gray-400">
+      <div class="my-3">
+        <dl class="flex flex-wrap gap-8">
+          <div>
+            <dt class="text-xs text-gray-400">Customers Affected</dt>
+            <dd class="text-white">{{ outage.numCustAffected.toLocaleString() }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-gray-400">Planner Group</dt>
+            <dd class="text-white">{{ plannerGroupFormatted }}</dd>
+          </div>
+        </dl>
+      </div>
+      <p v-if="!repetitiveMessages.indexOf(outage.statusMessage)" class="text-sm text-gray-400">
         {{ outage.statusMessage }}
       </p>
     </div>
