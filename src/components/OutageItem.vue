@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import type { OutageDetail } from '@/types/outage'
 import { parseDate } from '@/util/parseDate'
 import RelativeDate from './RelativeDate.vue'
@@ -33,6 +33,23 @@ const textColor = computed(() => {
 const props = defineProps<{
   outage: OutageDetail
 }>()
+
+const emit = defineEmits(['toggle-pin'])
+const isPinned = ref(false)
+const storageKey = `pinned-outage-${props.outage.outageId}`
+
+onMounted(() => {
+  const storedValue = localStorage.getItem(storageKey)
+  isPinned.value = storedValue ? JSON.parse(storedValue) : false
+})
+
+// Toggle pinned state and notify parent
+const togglePin = () => {
+  isPinned.value = !isPinned.value
+  localStorage.setItem(storageKey, JSON.stringify(isPinned.value))
+  emit('toggle-pin', props.outage.outageId, isPinned.value) // Notify parent
+}
+
 </script>
 
 <template>
@@ -63,15 +80,19 @@ const props = defineProps<{
       </p>
     </div>
 
-    <div class="p-4 py-1 rounded-lg bg-gray-700">
-      <p class="font-normal text-gray-400">
+    <div class="flex gap-4 p-4 py-1 pr-12 rounded-lg bg-gray-700 relative">
+      <p class="font-normal text-gray-400 w-full">
         <span v-if="outage.outageType === 'Restored'">
           Restored <RelativeDate :date="parseDate(outage.restoreTime)" />
         </span>
         <span v-else>
           Estimated restore <RelativeDate :date="parseDate(outage.estRestoreTime)" />
         </span>
+
       </p>
+      <button @click="togglePin" class="text-gray-400 grid border border-transparent items-center absolute right-1 top-1 w-6 aspect-square rounded-full  cursor-pointer hover:bg-gray-800">
+        {{ isPinned ? '★' : '☆' }}
+      </button>
     </div>
   </div>
 </template>

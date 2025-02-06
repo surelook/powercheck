@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import type { OutageDetail } from '../types/outage'
 import OutageItem from './OutageItem.vue'
 import SummaryValue from './SummaryValue.vue'
@@ -11,6 +11,30 @@ const plannerGroupFilter = ref<string | null>(null)
 const sortOption = ref('newest')
 const typeFilter = ref<'Fault' | 'Planned' | 'Restored' | null>(null)
 const search = ref('')
+const pinnedOutages = ref<string[]>([])
+
+onMounted(() => {
+  const storedPins = JSON.parse(localStorage.getItem('pinned-outages') || '[]')
+  pinnedOutages.value = storedPins
+})
+
+watch(pinnedOutages, (newPins) => {
+  localStorage.setItem('pinned-outages', JSON.stringify(newPins))
+}, { deep: true })
+
+const updatePinnedOutages = (outageId: string, isPinned: boolean) => {
+  if (isPinned) {
+    if (!pinnedOutages.value.includes(outageId)) {
+      pinnedOutages.value.push(outageId)
+    }
+  } else {
+    pinnedOutages.value = pinnedOutages.value.filter(id => id !== outageId)
+  }
+  localStorage.setItem('pinned-outages', JSON.stringify(pinnedOutages.value))
+}
+
+const pinned = computed(() => props.outages.filter(o => pinnedOutages.value.includes(o.outageId)))
+const unpinned = computed(() => props.outages.filter(o => !pinnedOutages.value.includes(o.outageId)))
 
 const props = defineProps<{
   outages: OutageDetail[],
@@ -102,6 +126,12 @@ const sortedOutages = computed(() => {
   }
 
   return [...filtered].sort((a, b) => {
+    const aPinned = pinnedOutages.value.includes(a.outageId) ? -1 : 1
+    const bPinned = pinnedOutages.value.includes(b.outageId) ? -1 : 1
+
+    // Prioritize pinned items
+    if (aPinned !== bPinned) return aPinned - bPinned
+
     switch (sortOption.value) {
       case 'location-asc':
         return a.location.localeCompare(b.location)
@@ -210,7 +240,7 @@ const sortedOutages = computed(() => {
   </div>
 
   <div class="grid gap-4 p-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-    <OutageItem v-for="outage in sortedOutages" :key="outage.outageId" :outage="outage" />
+    <OutageItem v-for="outage in sortedOutages" :key="outage.outageId" :outage="outage" @toggle-pin="updatePinnedOutages"/>
 
     <div v-if="sortedOutages.length < 1" class="flex flex-col border rounded-lg bg-gray-800 border-gray-700 p-4">
       <p class="text-gray-400">
