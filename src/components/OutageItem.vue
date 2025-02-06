@@ -46,7 +46,7 @@ const props = defineProps<{
         <span>{{ outage.location }}</span>
       </h5>
 
-      <div class="my-3">
+      <div class="my-1">
         <dl class="flex flex-wrap gap-8">
           <div>
             <dt class="text-xs text-gray-400">Customers Affected</dt>
