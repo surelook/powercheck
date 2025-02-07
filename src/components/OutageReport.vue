@@ -9,6 +9,7 @@ import type { PlannerGroup } from '@/types/planner-group.js'
 
 const plannerGroupFilter = ref<string | null>(null)
 const sortOption = ref('newest')
+const activeTypes = ref<string[]>(['Fault', 'Planned', 'Restored'])
 const typeFilter = ref<'Fault' | 'Planned' | 'Restored' | null>(null)
 const search = ref('')
 const pinnedOutages = ref<string[]>([])
@@ -18,9 +19,21 @@ onMounted(() => {
   pinnedOutages.value = storedPins
 })
 
-watch(pinnedOutages, (newPins) => {
-  localStorage.setItem('pinned-outages', JSON.stringify(newPins))
-}, { deep: true })
+watch(
+  pinnedOutages,
+  (newPins) => {
+    localStorage.setItem('pinned-outages', JSON.stringify(newPins))
+  },
+  { deep: true },
+)
+
+const toggleTypeFilter = (type: string) => {
+  if (activeTypes.value.includes(type)) {
+    activeTypes.value = activeTypes.value.filter((t) => t !== type)
+  } else {
+    activeTypes.value.push(type)
+  }
+}
 
 const updatePinnedOutages = (outageId: string, isPinned: boolean) => {
   if (isPinned) {
@@ -28,38 +41,19 @@ const updatePinnedOutages = (outageId: string, isPinned: boolean) => {
       pinnedOutages.value.push(outageId)
     }
   } else {
-    pinnedOutages.value = pinnedOutages.value.filter(id => id !== outageId)
+    pinnedOutages.value = pinnedOutages.value.filter((id) => id !== outageId)
   }
   localStorage.setItem('pinned-outages', JSON.stringify(pinnedOutages.value))
 }
 
-const pinned = computed(() => props.outages.filter(o => pinnedOutages.value.includes(o.outageId)))
-const unpinned = computed(() => props.outages.filter(o => !pinnedOutages.value.includes(o.outageId)))
-
 const props = defineProps<{
-  outages: OutageDetail[],
+  outages: OutageDetail[]
   plannerGroups: PlannerGroup[]
 }>()
 
 const buildDate = computed(() => {
   return new Date(__BUILD_DATE__)
 })
-
-const isFiltersActive = computed(() => {
-  return (
-    search.value !== '' ||
-    plannerGroupFilter.value !== null ||
-    typeFilter.value !== null ||
-    sortOption.value !== 'newest'
-  )
-})
-
-const resetFilters = () => {
-  search.value = ''
-  plannerGroupFilter.value = null
-  typeFilter.value = null
-  sortOption.value = 'newest'
-}
 
 const numberCustomersAffected = computed(() => {
   return sortedOutages.value
@@ -121,8 +115,10 @@ const sortedOutages = computed(() => {
     )
   }
 
-  if (typeFilter.value) {
-    filtered = filtered.filter((outage) => outage.outageType === typeFilter.value)
+  if (activeTypes.value.length === 0) {
+    filtered = []
+  } else {
+    filtered = filtered.filter((outage) => activeTypes.value.includes(outage.outageType))
   }
 
   return [...filtered].sort((a, b) => {
@@ -155,19 +151,18 @@ const sortedOutages = computed(() => {
   })
 })
 
-// const uniquePlannerGroups = computed(() => {
-//   return [
-//     ...new Set(
-//       props.outages
-//         .flatMap((outage) => outage.plannerGroup.split(','))
-//         .map((group) => group.trim()), // Trim whitespace for consistency
-//     ),
-//   ].sort()
-// })
+const getToggleFilterStyle = (type: string) => {
+  if (type === 'Fault') return 'peer-checked:bg-red-600'
+  if (type === 'Planned') return 'peer-checked:bg-yellow-600'
+  if (type === 'Restored') return 'peer-checked:bg-green-600'
+}
 </script>
 
 <template>
-  <div class="text-gray-400 p-4 text-xs">Updated <RelativeDate :date="buildDate" /> from <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a></div>
+  <div class="text-gray-400 p-4 text-xs">
+    Updated <RelativeDate :date="buildDate" /> from
+    <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a>
+  </div>
   <div class="flex flex-wrap gap-12 p-4 py-8">
     <SummaryValue label="Active Faults" :value="activeFaults.length.toLocaleString()" />
     <SummaryValue label="Customers Affected" :value="numberCustomersAffected.toLocaleString()" />
@@ -177,14 +172,10 @@ const sortedOutages = computed(() => {
       :value="mostCustomersAffected.location"
     >
       <template #secondaryValue>
-        {{ mostCustomersAffected.numCustAffected?.toLocaleString() + ' customers'}}
+        {{ mostCustomersAffected.numCustAffected?.toLocaleString() + ' customers' }}
       </template>
     </SummaryValue>
-    <SummaryValue
-      v-if="newestFault"
-      label="Newest Fault"
-      :value="newestFault.location"
-    >
+    <SummaryValue v-if="newestFault" label="Newest Fault" :value="newestFault.location">
       <template #secondaryValue>
         <RelativeDate :date="parseDate(newestFault.startTime)" />
       </template>
@@ -193,59 +184,82 @@ const sortedOutages = computed(() => {
 
   <div class="flex flex-wrap gap-4 p-4 items-center text-sm text-gray-400">
     <div class="flex items-center gap-2">
-      <label class="font-semibold">Search:</label>
-      <input v-model="search" type="text" class="bg-gray-800 border border-gray-700 text-white p-2 rounded" />
+      <input
+        v-model="search"
+        placeholder="Search by location"
+        type="text"
+        class="bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700 text-white p-2 px-4"
+      />
     </div>
+
     <div class="flex items-center gap-2">
-      <label class="font-semibold">Planner Group:</label>
-      <select v-model="plannerGroupFilter" class="bg-gray-800 border border-gray-700 text-white p-2 rounded">
-        <option :value="null">All</option>
-        <option v-for="plannerGroup in plannerGroups" :key="plannerGroup.name" :value="plannerGroup.name">
+      <select
+        v-model="plannerGroupFilter"
+        class="bg-gray-800 border border-gray-700 hover:bg-gray-700 cursor-pointer text-white p-2 px-4 rounded-full"
+      >
+        <option :value="null">All Planner Groups</option>
+        <option
+          v-for="plannerGroup in plannerGroups"
+          :key="plannerGroup.name"
+          :value="plannerGroup.name"
+        >
           {{ plannerGroup.name }}
         </option>
       </select>
     </div>
 
-    <div class="flex items-center gap-2">
-      <label class="font-semibold">Status:</label>
-      <select v-model="typeFilter" class="bg-gray-800 border border-gray-700 text-white p-2 rounded">
-        <option :value="null">All</option>
-        <option v-for="type in ['Fault', 'Planned', 'Restored']" :key="type" :value="type">
+      <div class="inline-flex border rounded-full border-gray-700 overflow-hidden">
+        <button
+          v-for="type in ['Fault', 'Planned', 'Restored']"
+          :key="type"
+          @click="toggleTypeFilter(type)"
+          :class="[
+            'cursor-pointer hover:bg-gray-700 px-4 py-2 text-sm bg-gray-800 font-medium transition-colors duration-200 focus:outline-none',
+            activeTypes.includes(type)
+              ? type === 'Fault'
+                ? 'text-red-500'
+                : type === 'Planned'
+                  ? 'text-yellow-500'
+                  : type === 'Restored'
+                    ? 'text-green-500'
+                    : ''
+              : 'text-gray-700',
+          ]"
+        >
           {{ type }}
-        </option>
-      </select>
-    </div>
+        </button>
+      </div>
 
     <div class="flex items-center gap-2">
-      <label class="font-semibold">Sort by:</label>
-      <select v-model="sortOption" class="bg-gray-800 border border-gray-700 text-white p-2 rounded">
-        <option value="location-asc">A - Z</option>
-        <option value="location-desc">Z - A</option>
-        <option value="newest">Newest Outages</option>
-        <option value="oldest">Oldest Outages</option>
-        <option value="restore-earliest">Earliest Restore Date</option>
-        <option value="restore-latest">Latest Restore Date</option>
-        <option value="most-affected">Most Customers Affected</option>
-        <option value="least-affected">Least Customers Affected</option>
+      <select
+        v-model="sortOption"
+        class="bg-gray-800 border cursor-pointer hover:bg-gray-700 border-gray-700 text-white p-2 px-4 rounded-full"
+      >
+        <option value="location-asc">Sort A - Z</option>
+        <option value="location-desc">Sort Z - A</option>
+        <option value="newest">Sort by Newest</option>
+        <option value="oldest">Sort by Oldest</option>
+        <option value="restore-earliest">Sort by Earliest Restore</option>
+        <option value="restore-latest">Sort by Latest Restore</option>
+        <option value="most-affected">Sort by Most Customers</option>
+        <option value="least-affected">Sort by Fewest Customers</option>
       </select>
-
     </div>
-    <button
-      class="bg-indigo-500 hover:bg-indigo-700 border border-indigo-600 text-white font-bold py-2 px-4 rounded cursor-pointer disabled:opacity-50 disabled:cursor-default"
-      @click="resetFilters"
-      :disabled="!isFiltersActive"
-    >
-      Reset Filters
-    </button>
   </div>
 
   <div class="grid gap-4 p-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-    <OutageItem v-for="outage in sortedOutages" :key="outage.outageId" :outage="outage" @toggle-pin="updatePinnedOutages"/>
+    <OutageItem
+      v-for="outage in sortedOutages"
+      :key="outage.outageId"
+      :outage="outage"
+      @toggle-pin="updatePinnedOutages"
+    />
 
-    <div v-if="sortedOutages.length < 1" class="flex flex-col border rounded-lg bg-gray-800 border-gray-700 p-4">
-      <p class="text-gray-400">
-        There are no results matching your search..
-      </p>
+    <div
+      v-if="sortedOutages.length < 1"
+      class="flex flex-col border rounded-lg col-span-full bg-gray-800 border-gray-700 p-4"
+    >
+      <p class="text-gray-400">There are no results matching your search..</p>
     </div>
   </div>
 </template>
