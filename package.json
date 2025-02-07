@@ -15,8 +15,10 @@
   },
   "dependencies": {
     "@analytics/google-analytics": "^1.1.0",
+    "@heroicons/vue": "^2.2.0",
     "@tailwindcss/postcss": "^4.0.1",
     "@tailwindcss/vite": "^4.0.1",
+    "@vue-hero-icons/outline": "^1.7.2",
     "analytics": "^0.8.16",
     "fs-extra": "^11.3.0",
     "puppeteer": "^24.1.1",

@@ -156,7 +156,7 @@ const sortedOutages = computed(() => {
     Updated <RelativeDate :date="buildDate" /> from
     <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a>
   </div>
-  <div class="flex flex-wrap gap-12 p-4 py-8">
+  <div class="flex flex-wrap gap-8 gap-y-4 p-4 py-4">
     <SummaryValue label="Active Faults" :value="activeFaults.length.toLocaleString()" />
     <SummaryValue label="Customers Affected" :value="numberCustomersAffected.toLocaleString()" />
     <SummaryValue
@@ -179,7 +179,7 @@ const sortedOutages = computed(() => {
     <div class="flex items-center gap-2">
       <input
         v-model="search"
-        placeholder="Search by location"
+        placeholder="Search locations"
         type="text"
         class="bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700 text-white p-2 px-4"
       />
@@ -188,7 +188,7 @@ const sortedOutages = computed(() => {
     <div class="flex items-center gap-2">
       <select
         v-model="plannerGroupFilter"
-        class="bg-gray-800 border border-gray-700 hover:bg-gray-700 cursor-pointer text-white p-2 px-4 rounded-full"
+        class="bg-gray-800 border border-gray-700 hover:bg-gray-700 cursor-pointer text-white p-2 px-4 rounded-full appearance-none"
       >
         <option :value="null">All Planner Groups</option>
         <option
@@ -223,10 +223,10 @@ const sortedOutages = computed(() => {
         </button>
       </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 relative">
       <select
         v-model="sortOption"
-        class="bg-gray-800 border cursor-pointer hover:bg-gray-700 border-gray-700 text-white p-2 px-4 rounded-full"
+        class="bg-gray-800 border cursor-pointer hover:bg-gray-700 border-gray-700 text-white p-2 px-4 rounded-full appearance-none"
       >
         <option value="location-asc">Sort A - Z</option>
         <option value="location-desc">Sort Z - A</option>
