@@ -10,7 +10,6 @@ import type { PlannerGroup } from '@/types/planner-group.js'
 const plannerGroupFilter = ref<string | null>(null)
 const sortOption = ref('newest')
 const activeTypes = ref<string[]>(['Fault', 'Planned', 'Restored'])
-const typeFilter = ref<'Fault' | 'Planned' | 'Restored' | null>(null)
 const search = ref('')
 const pinnedOutages = ref<string[]>([])
 
@@ -150,12 +149,6 @@ const sortedOutages = computed(() => {
     }
   })
 })
-
-const getToggleFilterStyle = (type: string) => {
-  if (type === 'Fault') return 'peer-checked:bg-red-600'
-  if (type === 'Planned') return 'peer-checked:bg-yellow-600'
-  if (type === 'Restored') return 'peer-checked:bg-green-600'
-}
 </script>
 
 <template>
