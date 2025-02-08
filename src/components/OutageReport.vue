@@ -27,20 +27,15 @@ watch(
 )
 
 const toggleTypeFilter = (type: string) => {
-  if (activeTypes.value.length === 3) {
-    // When all types are active, isolate the selected type.
-    activeTypes.value = [type]
-  } else if (activeTypes.value.length === 1 && activeTypes.value[0] === type) {
-    // If the only active type is clicked again, reset to all types.
-    activeTypes.value = ['Fault', 'Planned', 'Restored']
-  } else {
-    // Otherwise, toggle this type on or off.
-    if (activeTypes.value.includes(type)) {
-      activeTypes.value = activeTypes.value.filter(t => t !== type)
-    } else {
-      activeTypes.value.push(type)
-    }
+  if (!activeTypes.value.includes(type)) {
+    return activeTypes.value = [type]
   }
+
+  if (activeTypes.value.length === 1) {
+    return activeTypes.value = ['Fault', 'Planned', 'Restored']
+  }
+
+  return activeTypes.value = [type]
 }
 
 const updatePinnedOutages = (outageId: string, isPinned: boolean) => {
