@@ -1,17 +1,19 @@
 <script setup lang="ts">
+import { ChevronDownIcon } from '@heroicons/vue/24/solid'
 import { computed, onMounted, ref, watch } from 'vue'
-import type { OutageDetail } from '../types/outage'
-import OutageItem from './OutageItem.vue'
-import SummaryValue from './SummaryValue.vue'
 import { parseDate } from '../util/parseDate.ts'
+import OutageItem from './OutageItem.vue'
 import RelativeDate from './RelativeDate.vue'
+import SummaryValue from './SummaryValue.vue'
+import type { OutageDetail } from '../types/outage'
 import type { PlannerGroup } from '@/types/planner-group.js'
 
-const plannerGroupFilter = ref<string | null>(null)
-const sortOption = ref('newest')
+
 const activeTypes = ref<string[]>(['Fault', 'Planned', 'Restored'])
-const search = ref('')
 const pinnedOutages = ref<string[]>([])
+const plannerGroupFilter = ref<string | null>(null)
+const search = ref('')
+const sortOption = ref('newest')
 
 onMounted(() => {
   const storedPins = JSON.parse(localStorage.getItem('pinned-outages') || '[]')
@@ -189,23 +191,7 @@ const sortedOutages = computed(() => {
       />
     </div>
 
-    <div class="flex items-center gap-2">
-      <select
-        v-model="plannerGroupFilter"
-        class="bg-gray-800 border border-gray-700 hover:bg-gray-700 cursor-pointer text-white p-2 px-4 rounded-full appearance-none"
-      >
-        <option :value="null">All Planner Groups</option>
-        <option
-          v-for="plannerGroup in plannerGroups"
-          :key="plannerGroup.name"
-          :value="plannerGroup.name"
-        >
-          {{ plannerGroup.name }}
-        </option>
-      </select>
-    </div>
-
-      <div class="inline-flex border rounded-full border-gray-700 overflow-hidden">
+    <div class="inline-flex border rounded-full border-gray-700 overflow-hidden">
         <button
           v-for="type in ['Fault', 'Planned', 'Restored']"
           :key="type"
@@ -227,10 +213,27 @@ const sortedOutages = computed(() => {
         </button>
       </div>
 
-    <div class="flex items-center gap-2 relative">
+    <div class="flex items-center relative">
+      <select
+        v-model="plannerGroupFilter"
+        class="bg-gray-800 border border-gray-700 hover:bg-gray-700 cursor-pointer text-white p-2 px-4 pr-8 rounded-full appearance-none"
+      >
+        <option :value="null">All Planner Groups</option>
+        <option
+          v-for="plannerGroup in plannerGroups"
+          :key="plannerGroup.name"
+          :value="plannerGroup.name"
+        >
+          {{ plannerGroup.name }}
+        </option>
+      </select>
+      <ChevronDownIcon class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
+    </div>
+
+    <div class="flex items-center relative">
       <select
         v-model="sortOption"
-        class="bg-gray-800 border cursor-pointer hover:bg-gray-700 border-gray-700 text-white p-2 px-4 rounded-full appearance-none"
+        class="bg-gray-800 border cursor-pointer hover:bg-gray-700 border-gray-700 text-white p-2 px-4 pr-8 rounded-full appearance-none"
       >
         <option value="location-asc">Sort A - Z</option>
         <option value="location-desc">Sort Z - A</option>
@@ -241,6 +244,7 @@ const sortedOutages = computed(() => {
         <option value="most-affected">Sort by Most Customers</option>
         <option value="least-affected">Sort by Fewest Customers</option>
       </select>
+      <ChevronDownIcon class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
     </div>
   </div>
 
