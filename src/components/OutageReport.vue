@@ -157,6 +157,10 @@ const sortedOutages = computed(() => {
 })
 
 const getToggleFilterClass = (type: string) => {
+  if (!activeTypes.value.includes(type)) {
+    return 'text-gray-700'
+  }
+  
   switch (type) {
       case 'Fault':
         return 'text-red-500'
