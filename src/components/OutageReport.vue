@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronDownIcon } from '@heroicons/vue/24/solid'
+import { ChevronDownIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/solid'
 import { computed, onMounted, ref, watch } from 'vue'
 import { parseDate } from '../util/parseDate.ts'
 import OutageItem from './OutageItem.vue'
@@ -182,13 +182,16 @@ const sortedOutages = computed(() => {
   </div>
 
   <div class="flex flex-wrap gap-4 p-4 items-center text-sm text-gray-400">
-    <div class="flex items-center gap-2">
+    <div class="flex items-center relative">
       <input
         v-model="search"
-        placeholder="Search locations"
+        placeholder="Search"
         type="text"
-        class="bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700 text-white p-2 px-4"
+        class="bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700 text-white p-2 px-7"
       />
+
+      <MagnifyingGlassIcon class="absolute left-2 w-4 flex items-center text-current pointer-events-none" />
+      <XMarkIcon v-if="search.valueOf()" class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
     </div>
 
     <div class="inline-flex border rounded-full border-gray-700 overflow-hidden">
