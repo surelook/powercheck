@@ -155,6 +155,19 @@ const sortedOutages = computed(() => {
     }
   })
 })
+
+const getToggleFilterClass = (type: string) => {
+  switch (type) {
+      case 'Fault':
+        return 'text-red-500'
+      case 'Planned':
+        return 'text-yellow-500'
+      case 'Restored':
+        return 'text-green-500'
+      default:
+        return 'text-gray-700'
+  }
+}
 </script>
 
 <template>
@@ -201,15 +214,7 @@ const sortedOutages = computed(() => {
           @click="toggleTypeFilter(type)"
           :class="[
             'cursor-pointer hover:bg-gray-700 px-4 py-2 text-sm bg-gray-800 font-medium transition-colors duration-200 focus:outline-none',
-            activeTypes.includes(type)
-              ? type === 'Fault'
-                ? 'text-red-500'
-                : type === 'Planned'
-                  ? 'text-yellow-500'
-                  : type === 'Restored'
-                    ? 'text-green-500'
-                    : ''
-              : 'text-gray-700',
+            getToggleFilterClass(type)
           ]"
         >
           {{ type }}
