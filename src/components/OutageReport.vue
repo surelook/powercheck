@@ -182,12 +182,12 @@ const sortedOutages = computed(() => {
   </div>
 
   <div class="flex flex-wrap gap-4 p-4 items-center text-sm text-gray-400">
-    <div class="flex items-center relative">
+    <div class="flex items-center relative max-sm:w-full">
       <input
         v-model="search"
         placeholder="Search"
         type="text"
-        class="bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700 text-white p-2 px-7"
+        class="bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700 text-white p-2 px-7 max-sm:w-full"
       />
 
       <MagnifyingGlassIcon class="absolute left-2 w-4 flex items-center text-current pointer-events-none" />
@@ -216,10 +216,10 @@ const sortedOutages = computed(() => {
         </button>
       </div>
 
-    <div class="flex items-center relative">
+    <div class="flex items-center relative max-sm:w-full">
       <select
         v-model="plannerGroupFilter"
-        class="bg-gray-800 border border-gray-700 hover:bg-gray-700 cursor-pointer text-white p-2 px-4 pr-8 rounded-full appearance-none"
+        class="bg-gray-800 border border-gray-700 hover:bg-gray-700 cursor-pointer text-white p-2 px-4 pr-8 rounded-full appearance-none max-sm:w-full"
       >
         <option :value="null">All Planner Groups</option>
         <option
@@ -233,10 +233,10 @@ const sortedOutages = computed(() => {
       <ChevronDownIcon class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
     </div>
 
-    <div class="flex items-center relative">
+    <div class="flex items-center relative max-sm:w-full">
       <select
         v-model="sortOption"
-        class="bg-gray-800 border cursor-pointer hover:bg-gray-700 border-gray-700 text-white p-2 px-4 pr-8 rounded-full appearance-none"
+        class="bg-gray-800 border cursor-pointer hover:bg-gray-700 border-gray-700 text-white p-2 px-4 pr-8 rounded-full appearance-none max-sm:w-full"
       >
         <option value="location-asc">Sort A - Z</option>
         <option value="location-desc">Sort Z - A</option>
