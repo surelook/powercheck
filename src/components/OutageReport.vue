@@ -191,7 +191,7 @@ const sortedOutages = computed(() => {
       />
 
       <MagnifyingGlassIcon class="absolute left-2 w-4 flex items-center text-current pointer-events-none" />
-      <XMarkIcon v-if="search.valueOf()" class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
+      <XMarkIcon v-if="search.valueOf()" @click="search = ''" class="absolute right-2 w-4 flex items-center text-current cursor-pointer" />
     </div>
 
     <div class="inline-flex border rounded-full border-gray-700 overflow-hidden">
