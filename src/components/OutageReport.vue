@@ -83,8 +83,8 @@ const activePlanned = computed(() => {
   return props.outages.filter((outage) => outage.outageType === 'Planned')
 })
 
-const newestFault = computed(() => {
-  const filteredOutages = props.outages.filter((outage) => outage.outageType === 'Fault')
+const newestOutage = computed(() => {
+  const filteredOutages = props.outages.filter((outage) => outage.outageType !== 'Restored')
 
   if (filteredOutages.length === 0) {
     return
@@ -96,7 +96,7 @@ const newestFault = computed(() => {
 })
 
 const mostCustomersAffected = computed(() => {
-  const filteredOutages = props.outages.filter((outage) => outage.outageType === 'Fault')
+  const filteredOutages = props.outages.filter((outage) => outage.outageType !== 'Restored')
 
   if (filteredOutages.length === 0) {
     return
@@ -212,12 +212,12 @@ const getToggleFilterClass = (type: string) => {
         {{ mostCustomersAffected.numCustAffected?.toLocaleString() + ' customers' }}
       </template>
     </SummaryValue>
-    <SummaryValue v-if="newestFault" label="Newest Outage" :value="newestFault.location">
+    <SummaryValue v-if="newestOutage" label="Newest Outage" :value="newestOutage.location">
       <template #value>
-        {{ newestFault.location }}
+        {{ newestOutage.location }}
       </template>
       <template #secondaryValue>
-        <RelativeDate :date="parseDate(newestFault.startTime)" />
+        <RelativeDate :date="parseDate(newestOutage.startTime)" />
       </template>
     </SummaryValue>
   </div>
