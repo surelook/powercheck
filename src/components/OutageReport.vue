@@ -191,7 +191,7 @@ const getToggleFilterClass = (type: string) => {
     <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a>
   </div>
   <div class="flex flex-wrap gap-8 gap-y-4 p-4 py-4">
-    <SummaryValue label="Active Outages">
+    <SummaryValue label="Active Faults">
       <template #value>
         {{ activeFaults.length.toLocaleString()}}<span class="text-sm text-yellow-500"> +{{ activePlanned.length.toLocaleString() }} planned</span>
       </template>
