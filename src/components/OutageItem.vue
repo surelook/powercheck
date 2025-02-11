@@ -85,6 +85,9 @@ const togglePin = () => {
         <span v-if="outage.outageType === 'Restored'">
           Restored <RelativeDate :date="parseDate(outage.restoreTime)" />
         </span>
+        <span v-else-if="!outage.estRestoreTime">
+          Estimated restore unknown
+        </span>
         <span v-else>
           Estimated restore <RelativeDate :date="parseDate(outage.estRestoreTime)" />
         </span>
