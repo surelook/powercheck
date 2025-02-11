@@ -8,7 +8,6 @@ import SummaryValue from './SummaryValue.vue'
 import type { OutageDetail } from '../types/outage'
 import type { PlannerGroup } from '@/types/planner-group.js'
 
-
 const activeTypes = ref<string[]>(['Fault', 'Planned', 'Restored'])
 const pinnedOutages = ref<string[]>([])
 const plannerGroupFilter = ref<string | null>(null)
@@ -61,19 +60,31 @@ const buildDate = computed(() => {
 })
 
 const numberCustomersAffected = computed(() => {
-  return sortedOutages.value
+  return props.outages
     .filter((outage) => outage.outageType === 'Fault')
     .reduce((acc, curr) => {
       return acc + curr.numCustAffected
     }, 0)
 })
 
+const numberCustomersAffectedPlanned = computed(() => {
+  return props.outages
+    .filter((outage) => outage.outageType === 'Planned')
+    .reduce((acc, curr) => {
+      return acc + curr.numCustAffected
+    }, 0)
+})
+
 const activeFaults = computed(() => {
-  return sortedOutages.value.filter((outage) => outage.outageType === 'Fault')
+  return props.outages.filter((outage) => outage.outageType === 'Fault')
+})
+
+const activePlanned = computed(() => {
+  return props.outages.filter((outage) => outage.outageType === 'Planned')
 })
 
 const newestFault = computed(() => {
-  const filteredOutages = sortedOutages.value.filter((outage) => outage.outageType === 'Fault')
+  const filteredOutages = props.outages.filter((outage) => outage.outageType === 'Fault')
 
   if (filteredOutages.length === 0) {
     return
@@ -85,7 +96,7 @@ const newestFault = computed(() => {
 })
 
 const mostCustomersAffected = computed(() => {
-  const filteredOutages = sortedOutages.value.filter((outage) => outage.outageType === 'Fault')
+  const filteredOutages = props.outages.filter((outage) => outage.outageType === 'Fault')
 
   if (filteredOutages.length === 0) {
     return
@@ -180,18 +191,31 @@ const getToggleFilterClass = (type: string) => {
     <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a>
   </div>
   <div class="flex flex-wrap gap-8 gap-y-4 p-4 py-4">
-    <SummaryValue label="Active Faults" :value="activeFaults.length.toLocaleString()" />
-    <SummaryValue label="Customers Affected" :value="numberCustomersAffected.toLocaleString()" />
+    <SummaryValue label="Active Outages">
+      <template #value>
+        {{ activeFaults.length.toLocaleString()}}<span class="text-sm text-yellow-500"> +{{ activePlanned.length.toLocaleString() }} planned</span>
+      </template>
+    </SummaryValue>
+    <SummaryValue label="Customers Affected">
+      <template #value>
+        {{ numberCustomersAffected.toLocaleString() }}<span class="text-sm text-yellow-500"> +{{ numberCustomersAffectedPlanned.toLocaleString() }} planned</span>
+      </template>
+    </SummaryValue>
     <SummaryValue
       v-if="mostCustomersAffected"
-      label="Largest Fault"
-      :value="mostCustomersAffected.location"
-    >
+      label="Largest Outage"
+      >
+      <template #value>
+        {{ mostCustomersAffected.location }}
+      </template>
       <template #secondaryValue>
         {{ mostCustomersAffected.numCustAffected?.toLocaleString() + ' customers' }}
       </template>
     </SummaryValue>
-    <SummaryValue v-if="newestFault" label="Newest Fault" :value="newestFault.location">
+    <SummaryValue v-if="newestFault" label="Newest Outage" :value="newestFault.location">
+      <template #value>
+        {{ newestFault.location }}
+      </template>
       <template #secondaryValue>
         <RelativeDate :date="parseDate(newestFault.startTime)" />
       </template>
