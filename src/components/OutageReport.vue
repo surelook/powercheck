@@ -252,7 +252,7 @@ const getToggleFilterClass = (type: string) => {
     <div class="flex items-center relative max-sm:w-full">
       <select
         v-model="plannerGroupFilter"
-        class="bg-gray-800 border border-gray-700 hover:bg-gray-700 cursor-pointer text-white p-2 px-4 pr-8 rounded-full appearance-none max-sm:w-full"
+        class="bg-gray-800 border text-sm border-gray-700 font-medium hover:bg-gray-700 cursor-pointer text-white p-2 px-4 pr-8 rounded-full appearance-none max-sm:w-full"
       >
         <option :value="null">All Planner Groups</option>
         <option
@@ -269,7 +269,7 @@ const getToggleFilterClass = (type: string) => {
     <div class="flex items-center relative max-sm:w-full">
       <select
         v-model="sortOption"
-        class="bg-gray-800 border cursor-pointer hover:bg-gray-700 border-gray-700 text-white p-2 px-4 pr-8 rounded-full appearance-none max-sm:w-full"
+        class="bg-gray-800 border cursor-pointer text-sm font-medium hover:bg-gray-700 border-gray-700 text-white p-2 px-4 pr-8 rounded-full appearance-none max-sm:w-full"
       >
         <option value="location-asc">Sort A - Z</option>
         <option value="location-desc">Sort Z - A</option>
