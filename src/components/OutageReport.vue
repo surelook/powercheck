@@ -193,12 +193,12 @@ const getToggleFilterClass = (type: string) => {
   <div class="flex flex-wrap gap-8 gap-y-4 p-4 py-4">
     <SummaryValue label="Ongoing Faults">
       <template #value>
-        {{ activeFaults.length.toLocaleString()}}<span class="text-sm text-yellow-500"> +{{ activePlanned.length.toLocaleString() }} planned</span>
+        {{ activeFaults.length.toLocaleString()}}<span v-if="activePlanned.length" class="text-sm text-yellow-500"> +{{ activePlanned.length.toLocaleString() }} planned</span>
       </template>
     </SummaryValue>
     <SummaryValue label="Customers Affected">
       <template #value>
-        {{ numberCustomersAffected.toLocaleString() }}<span class="text-sm text-yellow-500"> +{{ numberCustomersAffectedPlanned.toLocaleString() }} planned</span>
+        {{ numberCustomersAffected.toLocaleString() }}<span v-if="activePlanned.length" class="text-sm text-yellow-500"> +{{ numberCustomersAffectedPlanned.toLocaleString() }} planned</span>
       </template>
     </SummaryValue>
     <SummaryValue
