@@ -7,31 +7,71 @@ const configPath = path.resolve('data/config.json')
 const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
 const { apiBaseUrl, apiKey } = config
 
-const PLANNERGROUPS_FILE = path.join(DATA_DIR, 'plannergroups.json')
+const PLANNERGROUPS_FILE_FILE = path.join(DATA_DIR, 'plannergroups.json')
+const DETAILS_DIR = path.join(DATA_DIR, 'details')
 
 ;(async () => {
   try {
-    console.log('Fetching planner groups...')
+    console.log('Fetching outage details...')
 
-    const response = await fetch(`${apiBaseUrl}/v1.0/plannergroups`, {
-      headers: {
-        'api-subscription-key': apiKey,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch planner groups: ${response.statusText}`)
+    // Ensure the outages file exists
+    if (!fs.existsSync(PLANNERGROUPS_FILE_FILE)) {
+      throw new Error(
+        `Planner groups file not found at ${PLANNERGROUPS_FILE_FILE}. Please run fetchPlannerGroups.js first.`,
+      )
     }
 
-    const plannergroupsJson = await response.json()
+    // Read outages data
+    const { plannerGroup } = fs.readJsonSync(PLANNERGROUPS_FILE_FILE)
+    if (!Array.isArray(plannerGroup) || plannerGroup.length === 0) {
+      throw new Error('No planner groups to fetch details for.')
+    }
 
-    // Ensure the data directory exists
-    fs.ensureDirSync(DATA_DIR)
+    // Delete all existing details
+    fs.emptyDirSync(DETAILS_DIR)
+    console.log('Cleared all existing details.')
 
-    // Save planner groups data to JSON file
-    fs.writeJsonSync(PLANNERGROUPS_FILE, plannergroupsJson, { spaces: 2 })
-    console.log(`Planner groups saved to ${PLANNERGROUPS_FILE}`)
+    for (const planner of plannerGroup) {
+      const plannerNamme = planner.name
+
+      console.log(`Fetching outages for planner ${plannerNamme}...`)
+
+      try {
+        const response = await fetch(`${apiBaseUrl}/v1.0/plannergroups/${plannerNamme}/outages?results=999999`, {
+          headers: {
+            'api-subscription-key': apiKey,
+          },
+        })
+
+        // If the response is 404, skip to the next planner
+        if (response.status === 404) {
+          console.log(`No outages found for planner ${plannerNamme}. Skipping...`)
+          continue
+        }
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch details for ${plannerNamme}: ${response.statusText}`)
+        }
+
+        const { outageDetail } = await response.json()
+
+        for (const outage of outageDetail) {
+          const outageId = outage.outageId
+          const detailFile = path.join(DETAILS_DIR, `${outageId}.json`)
+
+          // Save detail data to a file
+          fs.writeJsonSync(detailFile, outage, { spaces: 2 })
+          console.log(`Detail for outage ${outageId} saved to ${detailFile}`)
+        }
+      } catch (error) {
+        console.error(`Error fetching outages for planner ${plannerNamme}:`, error.message)
+        throw error
+      }
+    }
+
+    console.log('All outage details fetched.')
   } catch (error) {
-    console.error('Error fetching planner groups:', error.message)
+    console.error('Error fetching outage details:', error.message)
+    process.exit(1)
   }
 })()

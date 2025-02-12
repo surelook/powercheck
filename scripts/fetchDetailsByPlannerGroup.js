@@ -44,8 +44,14 @@ const DETAILS_DIR = path.join(DATA_DIR, 'details')
           },
         })
 
+        // If the response is 404, skip to the next planner
+        if (response.status === 404) {
+          console.log(`No outages found for planner ${plannerNamme}. Skipping...`)
+          continue
+        }
+
         if (!response.ok) {
-          throw new Error(`Failed to fetch details for outage ${outageId}: ${response.statusText}`)
+          throw new Error(`Failed to fetch details for ${plannerNamme}: ${response.statusText}`)
         }
 
         const { outageDetail } = await response.json()
@@ -54,17 +60,19 @@ const DETAILS_DIR = path.join(DATA_DIR, 'details')
           const outageId = outage.outageId
           const detailFile = path.join(DETAILS_DIR, `${outageId}.json`)
 
-             // Save detail data to a file
+          // Save detail data to a file
           fs.writeJsonSync(detailFile, outage, { spaces: 2 })
           console.log(`Detail for outage ${outageId} saved to ${detailFile}`)
         }
       } catch (error) {
         console.error(`Error fetching outages for planner ${plannerNamme}:`, error.message)
+        throw error
       }
     }
 
     console.log('All outage details fetched.')
   } catch (error) {
     console.error('Error fetching outage details:', error.message)
+    process.exit(1)
   }
 })()

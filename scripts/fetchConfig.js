@@ -2,9 +2,12 @@ import puppeteer from 'puppeteer'
 import fs from 'fs-extra'
 
 async function fetchConfig() {
-  const isCI = process.env.CI === 'true';
+  const isCI = process.env.CI === 'true'
 
-  const browser = await puppeteer.launch({ headless: 'new' , args: isCI ? ['--no-sandbox', '--disable-setuid-sandbox'] : []})
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: isCI ? ['--no-sandbox', '--disable-setuid-sandbox'] : [],
+  })
   const page = await browser.newPage()
 
   console.log('Loading page...')
@@ -25,7 +28,7 @@ async function fetchConfig() {
   // Save extracted settings to a JSON file
   const config = {
     apiBaseUrl: settings.apiBaseUrl,
-    apiKey: settings.apiKey
+    apiKey: settings.apiKey,
   }
 
   fs.ensureDirSync('./data')
@@ -34,4 +37,7 @@ async function fetchConfig() {
   console.log('API details saved to config.json')
 }
 
-fetchConfig().catch(console.error)
+fetchConfig().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})
