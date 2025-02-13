@@ -26,7 +26,7 @@ const updateFiltered = (newFiltered: OutageDetail[]) => {
 </script>
 
 <template>
-  <main class="grid grid-cols-2 gap-4 p-4">
+  <main class="h-screen grid grid-cols-2 gap-4 p-4">
     <OutageReport
       :outages="outages"
       :plannerGroups="plannerGroups"

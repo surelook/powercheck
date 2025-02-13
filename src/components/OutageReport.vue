@@ -198,12 +198,12 @@ const getToggleFilterClass = (type: string) => {
 </script>
 
 <template>
-  <div class="@container">
-    <div class="text-gray-400 p-4 text-xs">
+  <div class="@container place-self-stretch overflow-auto">
+    <div class="text-gray-400 mb-4 text-xs">
       Updated <RelativeDate :date="buildDate" /> from
       <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a>
     </div>
-    <div class="flex flex-wrap gap-8 gap-y-4 p-4 py-4">
+    <div class="flex flex-wrap gap-8 gap-y-4 my-8">
       <SummaryValue label="Ongoing Faults">
         <template #value>
           {{ activeFaults.length.toLocaleString()}}<span v-if="activePlanned.length" class="text-sm text-yellow-500"> +{{ activePlanned.length.toLocaleString() }} planned</span>
@@ -235,7 +235,7 @@ const getToggleFilterClass = (type: string) => {
       </SummaryValue>
     </div>
 
-    <div class="flex flex-wrap gap-4 p-4 items-center text-sm text-gray-400">
+    <div class="flex flex-wrap gap-4 my-8 items-center text-sm text-gray-400">
       <div class="flex items-center relative @max-sm:w-full">
         <input
           v-model="search"
@@ -297,7 +297,7 @@ const getToggleFilterClass = (type: string) => {
       </div>
     </div>
 
-    <div class="grid gap-4 p-4 @lg:grid-cols-2 @xl:grid-cols-3 @2xl:grid-cols-4">
+    <div class="grid gap-4 @lg:grid-cols-2 @2xl:grid-cols-2 @4xl:grid-cols-3 @5xl:grid-cols-4">
       <OutageItem
         v-for="outage in sortedOutages"
         :key="outage.outageId"

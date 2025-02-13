@@ -1,5 +1,5 @@
 <template>
-  <div ref="mapContainer" class="w-full h-[500px] rounded-lg shadow-md"></div>
+  <div ref="mapContainer" class="place-self-stretch rounded-lg"></div>
 </template>
 
 <script setup lang="ts">
