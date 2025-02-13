@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import OutageReport from './components/OutageReport.vue'
+import OutageMap from './components/OutageMap.vue'
 import type { OutageDetail } from './types/outage'
 import type { PlannerGroup } from './types/planner-group'
 import './analytics'
@@ -10,16 +12,27 @@ const plannerGroupFile = import.meta.glob<{ plannerGroup?: PlannerGroup[] }>(
   { eager: true }
 );
 
-const outages: OutageDetail[] = Object.values(outageDefailtFiles).map((mod) => mod.default)
+const outages: OutageDetail[] = Object.values(outageDefailtFiles).map((mod) => mod.default);
 
 const plannerGroups: PlannerGroup[] = Object.values(plannerGroupFile).flatMap(
   data => data.plannerGroup ?? []
 );
+
+const filteredOutages = ref<OutageDetail[]>([...outages]);
+
+const updateFiltered = (newFiltered: OutageDetail[]) => {
+  filteredOutages.value = newFiltered;
+}
 </script>
 
 <template>
-  <main>
-    <OutageReport :outages="outages" :plannerGroups="plannerGroups" />
+  <main class="grid grid-cols-2 gap-4 p-4">
+    <OutageReport
+      :outages="outages"
+      :plannerGroups="plannerGroups"
+      @updateFiltered="updateFiltered"
+    />
+    <OutageMap :outages="filteredOutages" />
   </main>
 </template>
 

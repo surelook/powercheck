@@ -167,6 +167,18 @@ const sortedOutages = computed(() => {
   })
 })
 
+const emit = defineEmits<{
+  (e: 'updateFiltered', filtered: OutageDetail[]): void;
+}>();
+
+watch(
+  sortedOutages,
+  (newFiltered) => {
+    emit('updateFiltered', newFiltered);
+  },
+  { immediate: true }
+);
+
 const getToggleFilterClass = (type: string) => {
   if (!activeTypes.value.includes(type)) {
     return 'text-gray-700'
@@ -186,117 +198,119 @@ const getToggleFilterClass = (type: string) => {
 </script>
 
 <template>
-  <div class="text-gray-400 p-4 text-xs">
-    Updated <RelativeDate :date="buildDate" /> from
-    <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a>
-  </div>
-  <div class="flex flex-wrap gap-8 gap-y-4 p-4 py-4">
-    <SummaryValue label="Ongoing Faults">
-      <template #value>
-        {{ activeFaults.length.toLocaleString()}}<span v-if="activePlanned.length" class="text-sm text-yellow-500"> +{{ activePlanned.length.toLocaleString() }} planned</span>
-      </template>
-    </SummaryValue>
-    <SummaryValue label="Customers Affected">
-      <template #value>
-        {{ numberCustomersAffected.toLocaleString() }}<span v-if="activePlanned.length" class="text-sm text-yellow-500"> +{{ numberCustomersAffectedPlanned.toLocaleString() }} planned</span>
-      </template>
-    </SummaryValue>
-    <SummaryValue
-      v-if="mostCustomersAffected"
-      label="Largest Outage"
-      >
-      <template #value>
-        {{ mostCustomersAffected.location }}
-      </template>
-      <template #secondaryValue>
-        {{ mostCustomersAffected.numCustAffected?.toLocaleString() + ' customers' }}
-      </template>
-    </SummaryValue>
-    <SummaryValue v-if="newestOutage" label="Newest Outage" :value="newestOutage.location">
-      <template #value>
-        {{ newestOutage.location }}
-      </template>
-      <template #secondaryValue>
-        <RelativeDate :date="parseDate(newestOutage.startTime)" />
-      </template>
-    </SummaryValue>
-  </div>
-
-  <div class="flex flex-wrap gap-4 p-4 items-center text-sm text-gray-400">
-    <div class="flex items-center relative max-sm:w-full">
-      <input
-        v-model="search"
-        placeholder="Search"
-        type="text"
-        class="bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700 text-white p-2 px-7 max-sm:w-full"
-      />
-
-      <MagnifyingGlassIcon class="absolute left-2 w-4 flex items-center text-current pointer-events-none" />
-      <XMarkIcon v-if="search.valueOf()" @click="search = ''" class="absolute right-2 w-4 flex items-center text-current cursor-pointer" />
+  <div class="@container">
+    <div class="text-gray-400 p-4 text-xs">
+      Updated <RelativeDate :date="buildDate" /> from
+      <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a>
+    </div>
+    <div class="flex flex-wrap gap-8 gap-y-4 p-4 py-4">
+      <SummaryValue label="Ongoing Faults">
+        <template #value>
+          {{ activeFaults.length.toLocaleString()}}<span v-if="activePlanned.length" class="text-sm text-yellow-500"> +{{ activePlanned.length.toLocaleString() }} planned</span>
+        </template>
+      </SummaryValue>
+      <SummaryValue label="Customers Affected">
+        <template #value>
+          {{ numberCustomersAffected.toLocaleString() }}<span v-if="activePlanned.length" class="text-sm text-yellow-500"> +{{ numberCustomersAffectedPlanned.toLocaleString() }} planned</span>
+        </template>
+      </SummaryValue>
+      <SummaryValue
+        v-if="mostCustomersAffected"
+        label="Largest Outage"
+        >
+        <template #value>
+          {{ mostCustomersAffected.location }}
+        </template>
+        <template #secondaryValue>
+          {{ mostCustomersAffected.numCustAffected?.toLocaleString() + ' customers' }}
+        </template>
+      </SummaryValue>
+      <SummaryValue v-if="newestOutage" label="Newest Outage" :value="newestOutage.location">
+        <template #value>
+          {{ newestOutage.location }}
+        </template>
+        <template #secondaryValue>
+          <RelativeDate :date="parseDate(newestOutage.startTime)" />
+        </template>
+      </SummaryValue>
     </div>
 
-    <div class="inline-flex border rounded-full border-gray-700 overflow-hidden">
-        <button
-          v-for="type in ['Fault', 'Planned', 'Restored']"
-          :key="type"
-          @click="toggleTypeFilter(type)"
-          :class="[
-            'cursor-pointer hover:bg-gray-700 px-4 py-2 text-sm bg-gray-800 font-medium transition-colors duration-200 focus:outline-none',
-            getToggleFilterClass(type)
-          ]"
-        >
-          {{ type }}
-        </button>
+    <div class="flex flex-wrap gap-4 p-4 items-center text-sm text-gray-400">
+      <div class="flex items-center relative @max-sm:w-full">
+        <input
+          v-model="search"
+          placeholder="Search"
+          type="text"
+          class="bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700 text-white p-2 px-7 @max-sm:w-full"
+        />
+
+        <MagnifyingGlassIcon class="absolute left-2 w-4 flex items-center text-current pointer-events-none" />
+        <XMarkIcon v-if="search.valueOf()" @click="search = ''" class="absolute right-2 w-4 flex items-center text-current cursor-pointer" />
       </div>
 
-    <div class="flex items-center relative max-sm:w-full">
-      <select
-        v-model="plannerGroupFilter"
-        class="bg-gray-800 border text-sm border-gray-700 font-medium hover:bg-gray-700 cursor-pointer text-white p-2 px-4 pr-8 rounded-full appearance-none max-sm:w-full"
-      >
-        <option :value="null">All Planner Groups</option>
-        <option
-          v-for="plannerGroup in plannerGroups"
-          :key="plannerGroup.name"
-          :value="plannerGroup.name"
+      <div class="inline-flex border rounded-full border-gray-700 overflow-hidden">
+          <button
+            v-for="type in ['Fault', 'Planned', 'Restored']"
+            :key="type"
+            @click="toggleTypeFilter(type)"
+            :class="[
+              'cursor-pointer hover:bg-gray-700 px-4 py-2 text-sm bg-gray-800 font-medium transition-colors duration-200 focus:outline-none',
+              getToggleFilterClass(type)
+            ]"
+          >
+            {{ type }}
+          </button>
+        </div>
+
+      <div class="flex items-center relative @max-sm:w-full">
+        <select
+          v-model="plannerGroupFilter"
+          class="bg-gray-800 border text-sm border-gray-700 font-medium hover:bg-gray-700 cursor-pointer text-white p-2 px-4 pr-8 rounded-full appearance-none @max-sm:w-full"
         >
-          {{ plannerGroup.name }}
-        </option>
-      </select>
-      <ChevronDownIcon class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
+          <option :value="null">All Planner Groups</option>
+          <option
+            v-for="plannerGroup in plannerGroups"
+            :key="plannerGroup.name"
+            :value="plannerGroup.name"
+          >
+            {{ plannerGroup.name }}
+          </option>
+        </select>
+        <ChevronDownIcon class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
+      </div>
+
+      <div class="flex items-center relative @max-sm:w-full">
+        <select
+          v-model="sortOption"
+          class="bg-gray-800 border cursor-pointer text-sm font-medium hover:bg-gray-700 border-gray-700 text-white p-2 px-4 pr-8 rounded-full appearance-none @max-sm:w-full"
+        >
+          <option value="location-asc">Sort A - Z</option>
+          <option value="location-desc">Sort Z - A</option>
+          <option value="newest">Sort by Newest</option>
+          <option value="oldest">Sort by Oldest</option>
+          <option value="restore-earliest">Sort by Earliest Restore</option>
+          <option value="restore-latest">Sort by Latest Restore</option>
+          <option value="most-affected">Sort by Most Customers</option>
+          <option value="least-affected">Sort by Fewest Customers</option>
+        </select>
+        <ChevronDownIcon class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
+      </div>
     </div>
 
-    <div class="flex items-center relative max-sm:w-full">
-      <select
-        v-model="sortOption"
-        class="bg-gray-800 border cursor-pointer text-sm font-medium hover:bg-gray-700 border-gray-700 text-white p-2 px-4 pr-8 rounded-full appearance-none max-sm:w-full"
+    <div class="grid gap-4 p-4 @lg:grid-cols-2 @xl:grid-cols-3 @2xl:grid-cols-4">
+      <OutageItem
+        v-for="outage in sortedOutages"
+        :key="outage.outageId"
+        :outage="outage"
+        @toggle-pin="updatePinnedOutages"
+      />
+
+      <div
+        v-if="sortedOutages.length < 1"
+        class="flex flex-col border rounded-lg col-span-full bg-gray-800 border-gray-700 p-4"
       >
-        <option value="location-asc">Sort A - Z</option>
-        <option value="location-desc">Sort Z - A</option>
-        <option value="newest">Sort by Newest</option>
-        <option value="oldest">Sort by Oldest</option>
-        <option value="restore-earliest">Sort by Earliest Restore</option>
-        <option value="restore-latest">Sort by Latest Restore</option>
-        <option value="most-affected">Sort by Most Customers</option>
-        <option value="least-affected">Sort by Fewest Customers</option>
-      </select>
-      <ChevronDownIcon class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
-    </div>
-  </div>
-
-  <div class="grid gap-4 p-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-    <OutageItem
-      v-for="outage in sortedOutages"
-      :key="outage.outageId"
-      :outage="outage"
-      @toggle-pin="updatePinnedOutages"
-    />
-
-    <div
-      v-if="sortedOutages.length < 1"
-      class="flex flex-col border rounded-lg col-span-full bg-gray-800 border-gray-700 p-4"
-    >
-      <p class="text-gray-400">There are no results matching your search..</p>
+        <p class="text-gray-400">There are no results matching your search..</p>
+      </div>
     </div>
   </div>
 </template>
