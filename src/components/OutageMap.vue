@@ -9,7 +9,8 @@
       <l-circle-marker v-for="outage in props.outages"
         :key="outage.outageId"
         :lat-lng="outage.point.c.split(',').map(Number)"
-        :radius="10"
+        :weight="1"
+        :fill-opacity="0.5"
         :color="getMarkerColor(outage.outageType)"
         />
     </l-map>
