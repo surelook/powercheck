@@ -1,11 +1,38 @@
 <template>
-  <div ref="mapContainer" class="place-self-stretch rounded-lg"></div>
+  <div class="place-self-stretch">
+    <l-map ref="map" v-model:zoom="zoom" :center="[53.5, -7.5]">
+      <l-tile-layer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        layer-type="base"
+        name="OpenStreetMap"
+      ></l-tile-layer>
+      <l-circle-marker v-for="outage in props.outages"
+        :key="outage.outageId"
+        :lat-lng="outage.point.c.split(',').map(Number)"
+        :radius="10"
+        :color="getMarkerColor(outage.outageType)"
+        />
+    </l-map>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, ref } from 'vue';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { ref } from 'vue'
+import "leaflet/dist/leaflet.css";
+import { LMap, LTileLayer, LCircleMarker } from "@vue-leaflet/vue-leaflet";
+
+const getMarkerColor = (outageType) => {
+  switch (outageType) {
+    case 'Fault':
+      return 'var(--color-red-500)'
+    case 'Planned':
+      return 'var(--color-orange-500)'
+    case 'Restored':
+      return 'var(--color-green-500)'
+    default:
+      return
+  }
+}
 
 const props = defineProps({
   outages: {
@@ -14,36 +41,8 @@ const props = defineProps({
   },
 });
 
-const mapContainer = ref(null);
-let map;
-let markersLayer;
+const zoom = ref(7)
 
-onMounted(() => {
-  if (!mapContainer.value) return;
-
-  map = L.map(mapContainer.value).setView([53.5, -7.5], 7);
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors',
-  }).addTo(map);
-
-  markersLayer = L.layerGroup().addTo(map);
-  updateMarkers();
-});
-
-watch(() => props.outages, updateMarkers, { deep: true });
-
-function updateMarkers() {
-  if (!map || !markersLayer) return;
-  markersLayer.clearLayers();
-
-  props.outages.forEach(outage => {
-    const [lat, lon] = outage.point.c.split(',').map(Number);
-    if (!isNaN(lat) && !isNaN(lon)) {
-      L.marker([lat, lon])
-        .bindPopup(`<strong>${outage.location}</strong><br>${outage.statusMessage}`)
-        .addTo(markersLayer);
-    }
-  });
-}
 </script>
+
+<style></style>

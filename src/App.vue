@@ -26,14 +26,18 @@ const updateFiltered = (newFiltered: OutageDetail[]) => {
 </script>
 
 <template>
-  <main class="h-screen grid grid-cols-2 gap-4 p-4">
+  <main class="h-screen grid md:grid-cols-2">
+    <OutageMap class="md-max:display-none" :outages="filteredOutages" />
     <OutageReport
       :outages="outages"
       :plannerGroups="plannerGroups"
       @updateFiltered="updateFiltered"
     />
-    <OutageMap :outages="filteredOutages" />
   </main>
 </template>
 
-<style scoped></style>
+<style>
+  .leaflet-bar a {
+    padding: 0;
+  }
+</style>
