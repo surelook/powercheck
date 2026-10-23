@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ChevronDownIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/solid'
-import { computed, onMounted, ref, watch } from 'vue'
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/solid'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { parseDate } from '../util/parseDate.ts'
 import OutageItem from './OutageItem.vue'
+import OutageMap, { type MapPadding } from './OutageMap.vue'
 import RelativeDate from './RelativeDate.vue'
 import SummaryValue from './SummaryValue.vue'
 import type { OutageDetail } from '../types/outage'
@@ -13,10 +14,54 @@ const pinnedOutages = ref<string[]>([])
 const plannerGroupFilter = ref<string | null>(null)
 const search = ref('')
 const sortOption = ref('newest')
+const selectedId = ref<string | null>(null)
+// Set by clicking a marker; narrows the list to that one outage
+const mapFilterId = ref<string | null>(null)
+const collapsed = ref(!window.matchMedia('(min-width: 768px)').matches)
+
+const mapRef = ref<InstanceType<typeof OutageMap>>()
+const panelRef = ref<HTMLElement>()
+const mapPadding = ref<MapPadding>({ topLeft: [16, 16], bottomRight: [16, 16] })
+
+let wasSideDocked: boolean | null = null
+
+// Keeps map fits and fly-tos clear of whichever edge the panel is docked to
+const updateMapPadding = () => {
+  const panel = panelRef.value?.getBoundingClientRect()
+  if (!panel) return
+  const isSideDocked = panel.width < window.innerWidth * 0.8
+  mapPadding.value = isSideDocked
+    ? { topLeft: [panel.right + 24, 24], bottomRight: [24, 24] }
+    : { topLeft: [24, 24], bottomRight: [24, window.innerHeight - panel.top + 24] }
+
+  // The panel jumped edges (e.g. phone rotated), so re-frame for the new free area
+  if (wasSideDocked !== null && wasSideDocked !== isSideDocked) reframeMap()
+  wasSideDocked = isSideDocked
+}
+
+const reframeMap = async () => {
+  await nextTick()
+  if (selectedId.value) mapRef.value?.focusOutage(selectedId.value)
+  else mapRef.value?.fitToOutages()
+}
+
+let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
   const storedPins = JSON.parse(localStorage.getItem('pinned-outages') || '[]')
   pinnedOutages.value = storedPins
+
+  resizeObserver = new ResizeObserver(updateMapPadding)
+  if (panelRef.value) resizeObserver.observe(panelRef.value)
+  window.addEventListener('resize', updateMapPadding)
+  updateMapPadding()
+  // The map mounted before the panel was measured, so fit again now padding is known
+  nextTick(() => mapRef.value?.fitToOutages(false))
+})
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  window.removeEventListener('resize', updateMapPadding)
 })
 
 watch(
@@ -107,7 +152,8 @@ const mostCustomersAffected = computed(() => {
   }, filteredOutages[0])
 })
 
-const sortedOutages = computed(() => {
+// Kept separate from sorting so re-sorting or pinning doesn't refit the map
+const visibleOutages = computed(() => {
   let filtered = props.outages
 
   // Apply search filter
@@ -137,7 +183,11 @@ const sortedOutages = computed(() => {
     filtered = filtered.filter((outage) => activeTypes.value.includes(outage.outageType))
   }
 
-  return [...filtered].sort((a, b) => {
+  return filtered
+})
+
+const sortedOutages = computed(() => {
+  return [...visibleOutages.value].sort((a, b) => {
     const aPinned = pinnedOutages.value.includes(a.outageId) ? -1 : 1
     const bPinned = pinnedOutages.value.includes(b.outageId) ? -1 : 1
 
@@ -167,6 +217,35 @@ const sortedOutages = computed(() => {
   })
 })
 
+const listedOutages = computed(() => {
+  if (!mapFilterId.value) return sortedOutages.value
+  return sortedOutages.value.filter((outage) => outage.outageId === mapFilterId.value)
+})
+
+watch(visibleOutages, (outages) => {
+  mapFilterId.value = null
+  if (selectedId.value && !outages.some((outage) => outage.outageId === selectedId.value)) {
+    selectedId.value = null
+  }
+})
+
+const selectFromMap = async (outageId: string | null) => {
+  selectedId.value = outageId
+  mapFilterId.value = outageId
+  if (!outageId) return
+  collapsed.value = false
+  await nextTick()
+  updateMapPadding()
+  // Let the new padding reach the map's props before measuring against it
+  await nextTick()
+  mapRef.value?.revealOutage(outageId)
+}
+
+const selectFromList = (outageId: string) => {
+  selectedId.value = outageId
+  mapRef.value?.focusOutage(outageId)
+}
+
 const getToggleFilterClass = (type: string) => {
   if (!activeTypes.value.includes(type)) {
     return 'text-gray-700'
@@ -186,117 +265,163 @@ const getToggleFilterClass = (type: string) => {
 </script>
 
 <template>
-  <div class="text-gray-400 p-4 text-xs">
-    Updated <RelativeDate :date="buildDate" /> from
-    <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a>
-  </div>
-  <div class="flex flex-wrap gap-8 gap-y-4 p-4 py-4">
-    <SummaryValue label="Ongoing Faults">
-      <template #value>
-        {{ activeFaults.length.toLocaleString()}}<span v-if="activePlanned.length" class="text-sm text-yellow-500"> +{{ activePlanned.length.toLocaleString() }} planned</span>
-      </template>
-    </SummaryValue>
-    <SummaryValue label="Customers Affected">
-      <template #value>
-        {{ numberCustomersAffected.toLocaleString() }}<span v-if="activePlanned.length" class="text-sm text-yellow-500"> +{{ numberCustomersAffectedPlanned.toLocaleString() }} planned</span>
-      </template>
-    </SummaryValue>
-    <SummaryValue
-      v-if="mostCustomersAffected"
-      label="Largest Outage"
-      >
-      <template #value>
-        {{ mostCustomersAffected.location }}
-      </template>
-      <template #secondaryValue>
-        {{ mostCustomersAffected.numCustAffected?.toLocaleString() + ' customers' }}
-      </template>
-    </SummaryValue>
-    <SummaryValue v-if="newestOutage" label="Newest Outage" :value="newestOutage.location">
-      <template #value>
-        {{ newestOutage.location }}
-      </template>
-      <template #secondaryValue>
-        <RelativeDate :date="parseDate(newestOutage.startTime)" />
-      </template>
-    </SummaryValue>
-  </div>
-
-  <div class="flex flex-wrap gap-4 p-4 items-center text-sm text-gray-400">
-    <div class="flex items-center relative max-sm:w-full">
-      <input
-        v-model="search"
-        placeholder="Search"
-        type="text"
-        class="bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700 text-white p-2 px-7 max-sm:w-full"
-      />
-
-      <MagnifyingGlassIcon class="absolute left-2 w-4 flex items-center text-current pointer-events-none" />
-      <XMarkIcon v-if="search.valueOf()" @click="search = ''" class="absolute right-2 w-4 flex items-center text-current cursor-pointer" />
-    </div>
-
-    <div class="inline-flex border rounded-full border-gray-700 overflow-hidden">
+  <div class="fixed inset-0 overflow-hidden">
+    <aside
+      ref="panelRef"
+      class="absolute z-[1000] flex flex-col overflow-y-auto overscroll-contain border border-gray-700 bg-gray-900/85 shadow-2xl backdrop-blur-md inset-x-0 bottom-0 max-h-[75dvh] rounded-t-2xl md:inset-x-auto md:top-4 md:bottom-auto md:left-4 md:w-[26rem] md:max-h-[calc(100dvh-2rem)] md:rounded-2xl"
+    >
+      <div class="flex shrink-0 items-start justify-between gap-4 p-4 pb-2">
+        <div class="text-gray-400 text-xs">
+          Updated <RelativeDate :date="buildDate" /> from
+          <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a>
+        </div>
         <button
-          v-for="type in ['Fault', 'Planned', 'Restored']"
-          :key="type"
-          @click="toggleTypeFilter(type)"
-          :class="[
-            'cursor-pointer hover:bg-gray-700 px-4 py-2 text-sm bg-gray-800 font-medium transition-colors duration-200 focus:outline-none',
-            getToggleFilterClass(type)
-          ]"
+          @click="collapsed = !collapsed"
+          :aria-expanded="!collapsed"
+          :aria-label="collapsed ? 'Show outage list' : 'Hide outage list'"
+          class="shrink-0 cursor-pointer rounded-full p-1 text-gray-400 hover:bg-gray-700 hover:text-white"
         >
-          {{ type }}
+          <ChevronUpIcon v-if="collapsed" class="w-5" />
+          <ChevronDownIcon v-else class="w-5" />
         </button>
       </div>
 
-    <div class="flex items-center relative max-sm:w-full">
-      <select
-        v-model="plannerGroupFilter"
-        class="bg-gray-800 border text-sm border-gray-700 font-medium hover:bg-gray-700 cursor-pointer text-white p-2 px-4 pr-8 rounded-full appearance-none max-sm:w-full"
-      >
-        <option :value="null">All Planner Groups</option>
-        <option
-          v-for="plannerGroup in plannerGroups"
-          :key="plannerGroup.name"
-          :value="plannerGroup.name"
-        >
-          {{ plannerGroup.name }}
-        </option>
-      </select>
-      <ChevronDownIcon class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
-    </div>
+      <div class="grid shrink-0 grid-cols-2 gap-x-4 gap-y-3 px-4 pb-4">
+        <SummaryValue label="Ongoing Faults">
+          <template #value>
+            {{ activeFaults.length.toLocaleString()}}<span v-if="activePlanned.length" class="text-sm text-yellow-500"> +{{ activePlanned.length.toLocaleString() }} planned</span>
+          </template>
+        </SummaryValue>
+        <SummaryValue label="Customers Affected">
+          <template #value>
+            {{ numberCustomersAffected.toLocaleString() }}<span v-if="activePlanned.length" class="text-sm text-yellow-500"> +{{ numberCustomersAffectedPlanned.toLocaleString() }} planned</span>
+          </template>
+        </SummaryValue>
+        <template v-if="!collapsed">
+          <SummaryValue v-if="mostCustomersAffected" label="Largest Outage">
+            <template #value>
+              {{ mostCustomersAffected.location }}
+            </template>
+            <template #secondaryValue>
+              {{ mostCustomersAffected.numCustAffected?.toLocaleString() + ' customers' }}
+            </template>
+          </SummaryValue>
+          <SummaryValue v-if="newestOutage" label="Newest Outage">
+            <template #value>
+              {{ newestOutage.location }}
+            </template>
+            <template #secondaryValue>
+              <RelativeDate :date="parseDate(newestOutage.startTime)" />
+            </template>
+          </SummaryValue>
+        </template>
+      </div>
 
-    <div class="flex items-center relative max-sm:w-full">
-      <select
-        v-model="sortOption"
-        class="bg-gray-800 border cursor-pointer text-sm font-medium hover:bg-gray-700 border-gray-700 text-white p-2 px-4 pr-8 rounded-full appearance-none max-sm:w-full"
-      >
-        <option value="location-asc">Sort A - Z</option>
-        <option value="location-desc">Sort Z - A</option>
-        <option value="newest">Sort by Newest</option>
-        <option value="oldest">Sort by Oldest</option>
-        <option value="restore-earliest">Sort by Earliest Restore</option>
-        <option value="restore-latest">Sort by Latest Restore</option>
-        <option value="most-affected">Sort by Most Customers</option>
-        <option value="least-affected">Sort by Fewest Customers</option>
-      </select>
-      <ChevronDownIcon class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
-    </div>
-  </div>
+      <template v-if="!collapsed">
+        <div class="flex shrink-0 flex-col gap-2 border-t border-gray-700 p-4 text-sm text-gray-400">
+          <div class="flex items-center relative">
+            <input
+              v-model="search"
+              placeholder="Search"
+              type="text"
+              class="w-full bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700 text-white p-2 px-7"
+            />
 
-  <div class="grid gap-4 p-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-    <OutageItem
-      v-for="outage in sortedOutages"
-      :key="outage.outageId"
-      :outage="outage"
-      @toggle-pin="updatePinnedOutages"
+            <MagnifyingGlassIcon class="absolute left-2 w-4 flex items-center text-current pointer-events-none" />
+            <XMarkIcon v-if="search.valueOf()" @click="search = ''" class="absolute right-2 w-4 flex items-center text-current cursor-pointer" />
+          </div>
+
+          <div class="flex border rounded-full border-gray-700 overflow-hidden">
+            <button
+              v-for="type in ['Fault', 'Planned', 'Restored']"
+              :key="type"
+              @click="toggleTypeFilter(type)"
+              :class="[
+                'flex-1 cursor-pointer hover:bg-gray-700 px-4 py-2 text-sm bg-gray-800 font-medium transition-colors duration-200 focus:outline-none',
+                getToggleFilterClass(type)
+              ]"
+            >
+              {{ type }}
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="flex items-center relative">
+              <select
+                v-model="plannerGroupFilter"
+                class="w-full bg-gray-800 border text-sm border-gray-700 font-medium hover:bg-gray-700 cursor-pointer text-white p-2 px-4 pr-8 rounded-full appearance-none"
+              >
+                <option :value="null">All Planner Groups</option>
+                <option
+                  v-for="plannerGroup in plannerGroups"
+                  :key="plannerGroup.name"
+                  :value="plannerGroup.name"
+                >
+                  {{ plannerGroup.name }}
+                </option>
+              </select>
+              <ChevronDownIcon class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
+            </div>
+
+            <div class="flex items-center relative">
+              <select
+                v-model="sortOption"
+                class="w-full bg-gray-800 border cursor-pointer text-sm font-medium hover:bg-gray-700 border-gray-700 text-white p-2 px-4 pr-8 rounded-full appearance-none"
+              >
+                <option value="location-asc">Sort A - Z</option>
+                <option value="location-desc">Sort Z - A</option>
+                <option value="newest">Sort by Newest</option>
+                <option value="oldest">Sort by Oldest</option>
+                <option value="restore-earliest">Sort by Earliest Restore</option>
+                <option value="restore-latest">Sort by Latest Restore</option>
+                <option value="most-affected">Sort by Most Customers</option>
+                <option value="least-affected">Sort by Fewest Customers</option>
+              </select>
+              <ChevronDownIcon class="absolute right-2 w-4 flex items-center text-current pointer-events-none" />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex min-h-48 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain p-4 pt-0">
+          <button
+            v-if="mapFilterId"
+            @click="mapFilterId = null"
+            class="flex shrink-0 cursor-pointer items-center justify-between rounded-full border border-gray-700 bg-gray-800 px-4 py-2 text-sm text-gray-400 hover:bg-gray-700 hover:text-white"
+          >
+            <span>Showing selected outage</span>
+            <span class="flex items-center gap-1 font-medium text-white">
+              Show all {{ sortedOutages.length.toLocaleString() }}
+              <XMarkIcon class="w-4" />
+            </span>
+          </button>
+
+          <OutageItem
+            v-for="outage in listedOutages"
+            :key="outage.outageId"
+            :outage="outage"
+            :selected="outage.outageId === selectedId"
+            @select="selectFromList(outage.outageId)"
+            @toggle-pin="updatePinnedOutages"
+          />
+
+          <div
+            v-if="sortedOutages.length < 1"
+            class="flex flex-col border rounded-lg bg-gray-800 border-gray-700 p-4"
+          >
+            <p class="text-gray-400">There are no results matching your search..</p>
+          </div>
+        </div>
+      </template>
+    </aside>
+
+    <OutageMap
+      ref="mapRef"
+      class="absolute inset-0"
+      :outages="visibleOutages"
+      :selected-id="selectedId"
+      :pinned-ids="pinnedOutages"
+      :padding="mapPadding"
+      @select="selectFromMap"
     />
-
-    <div
-      v-if="sortedOutages.length < 1"
-      class="flex flex-col border rounded-lg col-span-full bg-gray-800 border-gray-700 p-4"
-    >
-      <p class="text-gray-400">There are no results matching your search..</p>
-    </div>
   </div>
 </template>
