@@ -3,12 +3,14 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { OutageDetail } from '@/types/outage'
+import areasUrl from '@/assets/planner-group-areas.geojson?url'
 
 export type MapPadding = { topLeft: [number, number]; bottomRight: [number, number] }
 
 const props = defineProps<{
   outages: OutageDetail[]
   selectedId: string | null
+  plannerGroup: string | null
   padding: MapPadding
 }>()
 
@@ -28,6 +30,10 @@ let map: L.Map | null = null
 let markerLayer: L.FeatureGroup | null = null
 const markers = new Map<string, L.CircleMarker>()
 let fitTimer: ReturnType<typeof setTimeout> | undefined
+let areaLayer: L.GeoJSON | null = null
+// Group whose area has been resolved (drawn, or found missing); fits wait for it to avoid a double flight
+let areaFor: string | null = null
+let areasRequest: Promise<GeoJSON.FeatureCollection | null> | null = null
 
 // Canvas gives a hit tolerance around small markers (SVG has none) and keeps markers out of the tab order
 const renderer = L.canvas({ tolerance: window.matchMedia('(pointer: coarse)').matches ? 10 : 3 })
@@ -93,10 +99,54 @@ const renderMarkers = () => {
 
 const fitToOutages = (animate = true) => {
   if (!map || !markerLayer) return
-  const markerBounds = markerLayer.getLayers().length ? markerLayer.getBounds() : IRELAND_BOUNDS
-  const bounds = markerBounds.isValid() ? markerBounds : IRELAND_BOUNDS
-  if (animate) map.flyToBounds(bounds, { ...fitPadding(), maxZoom: 11, duration: 0.6 })
-  else map.fitBounds(bounds, { ...fitPadding(), maxZoom: 11 })
+  const bounds = L.latLngBounds([])
+  if (markerLayer.getLayers().length) bounds.extend(markerLayer.getBounds())
+  if (areaLayer) bounds.extend(areaLayer.getBounds())
+  const target = bounds.isValid() ? bounds : IRELAND_BOUNDS
+  if (animate) map.flyToBounds(target, { ...fitPadding(), maxZoom: 11, duration: 0.6 })
+  else map.fitBounds(target, { ...fitPadding(), maxZoom: 11 })
+}
+
+const scheduleFit = () => {
+  clearTimeout(fitTimer)
+  fitTimer = setTimeout(() => fitToOutages(), 300)
+}
+
+// Only needed once a planner group is picked, so fetched on first use
+const loadAreas = () =>
+  (areasRequest ??= fetch(areasUrl)
+    .then((response) => (response.ok ? (response.json() as Promise<GeoJSON.FeatureCollection>) : null))
+    .catch(() => null)
+    .then((areas) => {
+      if (!areas) areasRequest = null
+      return areas
+    }))
+
+const showPlannerGroupArea = async (name: string | null) => {
+  if (!name) {
+    areaLayer?.remove()
+    areaLayer = null
+    areaFor = null
+    scheduleFit()
+    return
+  }
+  const areas = await loadAreas()
+  if (!map || props.plannerGroup !== name) return
+  areaLayer?.remove()
+  const feature = areas?.features.find((area) => area.properties?.name === name)
+  areaLayer = feature
+    ? L.geoJSON(feature, {
+        pane: 'plannerGroupArea',
+        interactive: false,
+        style: { color: '#ffffff', weight: 2, opacity: 0.9, fillColor: '#ffffff', fillOpacity: 0.08 },
+        attribution:
+          'Area approximated from <a href="https://www.esbnetworks.ie/customer-support/contact-us/map-of-regions">ESB Networks</a> · ' +
+          'boundaries © <a href="https://data-osi.opendata.arcgis.com/datasets/osi::electoral-divisions-national-statutory-boundaries-2019-generalised-20m">Tailte Éireann</a>, ' +
+          '<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, modified',
+      }).addTo(map)
+    : null
+  areaFor = name
+  scheduleFit()
 }
 
 // Centres the outage within the area not covered by overlays
@@ -178,9 +228,14 @@ onMounted(() => {
     maxZoom: 19,
   }).addTo(map)
   map.on('click', () => emit('select', null))
+  // Below the markers, and click-through so it never catches marker taps
+  const areaPane = map.createPane('plannerGroupArea')
+  areaPane.style.zIndex = '350'
+  areaPane.style.pointerEvents = 'none'
   markerLayer = L.featureGroup().addTo(map)
   renderMarkers()
   fitToOutages(false)
+  if (props.plannerGroup) showPlannerGroupArea(props.plannerGroup)
 })
 
 onBeforeUnmount(() => {
@@ -194,10 +249,11 @@ watch(
   () => props.outages.map((outage) => outage.outageId).join(','),
   () => {
     renderMarkers()
-    clearTimeout(fitTimer)
-    fitTimer = setTimeout(() => fitToOutages(), 300)
+    if (props.plannerGroup === areaFor) scheduleFit()
   },
 )
+
+watch(() => props.plannerGroup, showPlannerGroupArea)
 
 watch(() => props.selectedId, () => {
   for (const outage of props.outages) markers.get(outage.outageId)?.setStyle(styleFor(outage))

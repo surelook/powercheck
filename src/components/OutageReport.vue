@@ -389,6 +389,7 @@ const getToggleFilterClass = (type: string) => {
       class="absolute inset-0"
       :outages="visibleOutages"
       :selected-id="selectedId"
+      :planner-group="plannerGroupFilter"
       :padding="mapPadding"
       @select="selectFromMap"
     />
