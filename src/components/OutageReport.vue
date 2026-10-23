@@ -10,7 +10,6 @@ import type { OutageDetail } from '../types/outage'
 import type { PlannerGroup } from '@/types/planner-group.js'
 
 const activeTypes = ref<string[]>(['Fault', 'Planned', 'Restored'])
-const pinnedOutages = ref<string[]>([])
 const plannerGroupFilter = ref<string | null>(null)
 const search = ref('')
 const sortOption = ref('newest')
@@ -48,9 +47,6 @@ const reframeMap = async () => {
 let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
-  const storedPins = JSON.parse(localStorage.getItem('pinned-outages') || '[]')
-  pinnedOutages.value = storedPins
-
   resizeObserver = new ResizeObserver(updateMapPadding)
   if (panelRef.value) resizeObserver.observe(panelRef.value)
   window.addEventListener('resize', updateMapPadding)
@@ -64,14 +60,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', updateMapPadding)
 })
 
-watch(
-  pinnedOutages,
-  (newPins) => {
-    localStorage.setItem('pinned-outages', JSON.stringify(newPins))
-  },
-  { deep: true },
-)
-
 const toggleTypeFilter = (type: string) => {
   if (!activeTypes.value.includes(type)) {
     return activeTypes.value = [type]
@@ -82,17 +70,6 @@ const toggleTypeFilter = (type: string) => {
   }
 
   return activeTypes.value = [type]
-}
-
-const updatePinnedOutages = (outageId: string, isPinned: boolean) => {
-  if (isPinned) {
-    if (!pinnedOutages.value.includes(outageId)) {
-      pinnedOutages.value.push(outageId)
-    }
-  } else {
-    pinnedOutages.value = pinnedOutages.value.filter((id) => id !== outageId)
-  }
-  localStorage.setItem('pinned-outages', JSON.stringify(pinnedOutages.value))
 }
 
 const props = defineProps<{
@@ -152,7 +129,7 @@ const mostCustomersAffected = computed(() => {
   }, filteredOutages[0])
 })
 
-// Kept separate from sorting so re-sorting or pinning doesn't refit the map
+// Kept separate from sorting so re-sorting doesn't refit the map
 const visibleOutages = computed(() => {
   let filtered = props.outages
 
@@ -188,12 +165,6 @@ const visibleOutages = computed(() => {
 
 const sortedOutages = computed(() => {
   return [...visibleOutages.value].sort((a, b) => {
-    const aPinned = pinnedOutages.value.includes(a.outageId) ? -1 : 1
-    const bPinned = pinnedOutages.value.includes(b.outageId) ? -1 : 1
-
-    // Prioritize pinned items
-    if (aPinned !== bPinned) return aPinned - bPinned
-
     switch (sortOption.value) {
       case 'location-asc':
         return a.location.localeCompare(b.location)
@@ -401,7 +372,6 @@ const getToggleFilterClass = (type: string) => {
             :outage="outage"
             :selected="outage.outageId === selectedId"
             @select="selectFromList(outage.outageId)"
-            @toggle-pin="updatePinnedOutages"
           />
 
           <div
@@ -419,7 +389,6 @@ const getToggleFilterClass = (type: string) => {
       class="absolute inset-0"
       :outages="visibleOutages"
       :selected-id="selectedId"
-      :pinned-ids="pinnedOutages"
       :padding="mapPadding"
       @select="selectFromMap"
     />

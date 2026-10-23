@@ -9,7 +9,6 @@ export type MapPadding = { topLeft: [number, number]; bottomRight: [number, numb
 const props = defineProps<{
   outages: OutageDetail[]
   selectedId: string | null
-  pinnedIds: string[]
   padding: MapPadding
 }>()
 
@@ -45,11 +44,10 @@ const radiusFor =(customers: number) => Math.min(28, 5 + Math.sqrt(customers || 
 
 const styleFor = (outage: OutageDetail): L.CircleMarkerOptions => {
   const selected = outage.outageId === props.selectedId
-  const pinned = props.pinnedIds.includes(outage.outageId)
   return {
     radius: radiusFor(outage.numCustAffected),
     color: selected ? '#ffffff' : typeColors[outage.outageType],
-    weight: selected ? 3 : pinned ? 2 : 1,
+    weight: selected ? 3 : 1,
     fillColor: typeColors[outage.outageType],
     opacity: outage.outageType === 'Restored' && !selected ? 0.7 : 1,
     fillOpacity: selected ? 0.8 : outage.outageType === 'Restored' ? 0.3 : 0.5,
@@ -201,11 +199,11 @@ watch(
   },
 )
 
-watch([() => props.selectedId, () => props.pinnedIds], () => {
+watch(() => props.selectedId, () => {
   for (const outage of props.outages) markers.get(outage.outageId)?.setStyle(styleFor(outage))
   restack()
   closeOtherTooltips()
-}, { deep: true })
+})
 
 defineExpose({ focusOutage, revealOutage, fitToOutages })
 </script>
