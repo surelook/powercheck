@@ -12,6 +12,8 @@ const props = defineProps<{
   selectedId: string | null
   plannerGroup: string | null
   padding: MapPadding
+  // When the outages were recorded; changes as history is scrubbed
+  asOf: Date
 }>()
 
 const emit = defineEmits<{ select: [outageId: string | null] }>()
@@ -377,10 +379,11 @@ onBeforeUnmount(() => {
 
 // Keyed on IDs so keystrokes that don't change the matching set leave the map alone
 watch(
-  () => props.outages.map((outage) => outage.outageId).join(','),
-  () => {
+  () => [props.outages.map((outage) => outage.outageId).join(','), props.asOf] as const,
+  ([, asOf], [, previousAsOf]) => {
     renderMarkers()
-    if (props.plannerGroup === areaFor) scheduleFit()
+    // Scrubbing through history holds the view still, so outages can be watched coming and going
+    if (asOf === previousAsOf && props.plannerGroup === areaFor) scheduleFit()
   },
 )
 

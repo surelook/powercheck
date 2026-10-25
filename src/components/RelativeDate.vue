@@ -3,12 +3,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { getFriendlyTime } from '@/util/getFriendlyTime.ts'
 
 const props = defineProps<{ date: Date }>()
 
 const relativeTime = ref(getFriendlyTime(props.date))
+
+watch(() => props.date, (date) => (relativeTime.value = getFriendlyTime(date)))
 
 let intervalId: ReturnType<typeof setInterval> | null = null
 
