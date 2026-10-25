@@ -107,6 +107,7 @@ const renderMarkers = () => {
 }
 
 type Box = { left: number; top: number; right: number; bottom: number }
+type LabelCandidate = { outage: OutageDetail; latLng: L.LatLng; point: L.Point; radius: number }
 
 const overlaps = (a: Box, b: Box, gap = 0) =>
   a.left < b.right + gap &&
@@ -118,8 +119,8 @@ const overlaps = (a: Box, b: Box, gap = 0) =>
 const LABEL_NAME_FONT = '500 12px system-ui, sans-serif'
 const LABEL_COUNT_FONT = '700 12px system-ui, sans-serif'
 const LABEL_HEIGHT = 20
-// Padding, borders and the gap between name and count, plus slack for rounding
-const LABEL_CHROME = 20
+// Padding, borders, the type swatch and gaps, plus slack for rounding
+const LABEL_CHROME = 32
 
 const measureContext = document.createElement('canvas').getContext('2d')
 const textWidth = (text: string, font: string) => {
@@ -131,7 +132,7 @@ const textWidth = (text: string, font: string) => {
 // More fit as outages spread apart
 const labelLimit = (zoom: number) => (zoom < 7.5 ? 8 : zoom < 9 ? 12 : zoom < 11 ? 18 : 30)
 
-// Largest first, each taking the first free side of its dot; outages under the overlays get none
+// Each takes the first free side of its dot; outages under the overlays get none
 const placeLabels = () => {
   if (!map || !labelLayer) return
   labelLayer.clearLayers()
@@ -145,20 +146,26 @@ const placeLabels = () => {
     box.right <= visible.right &&
     box.bottom <= visible.bottom
 
-  const candidates = []
+  const candidates: LabelCandidate[] = []
   for (const outage of props.outages) {
     const marker = markers.get(outage.outageId)
-    if (!marker || outage.outageType === 'Restored') continue
+    if (!marker) continue
     const latLng = marker.getLatLng()
     const point = map.latLngToContainerPoint(latLng)
     if (!inside({ left: point.x, top: point.y, right: point.x, bottom: point.y })) continue
     candidates.push({ outage, latLng, point, radius: radiusFor(outage.numCustAffected) })
   }
   candidates.sort((a, b) => b.outage.numCustAffected - a.outage.numCustAffected)
+  // Each type's largest goes first, so planned and restored get labels even among bigger faults
+  const leaders = candidates.filter(
+    ({ outage }, i) =>
+      candidates.findIndex((other) => other.outage.outageType === outage.outageType) === i,
+  )
+  const ranked = [...leaders, ...candidates.filter((candidate) => !leaders.includes(candidate))]
 
   const limit = labelLimit(map.getZoom())
-  // Small dots may be covered; the dots of outages big enough to be labelled are kept clear where possible
-  const dots: Box[] = candidates.slice(0, limit * 2).map(({ point, radius }) => ({
+  // Small dots may be covered; dots of outages likely to get a label are kept clear where possible
+  const dots: Box[] = ranked.slice(0, limit * 2).map(({ point, radius }) => ({
     left: point.x - radius,
     top: point.y - radius,
     right: point.x + radius,
@@ -170,7 +177,7 @@ const placeLabels = () => {
     !placed.some((other) => overlaps(other, box, 3)) &&
     !dots.some((dot, d) => d !== index && (strict || d < index) && overlaps(dot, box))
 
-  for (const [index, { outage, latLng, point, radius }] of candidates.entries()) {
+  for (const [index, { outage, latLng, point, radius }] of ranked.entries()) {
     if (placed.length >= limit) break
     const count = outage.numCustAffected.toLocaleString()
     const width =
@@ -190,7 +197,7 @@ const placeLabels = () => {
       right: point.x - x + width,
       bottom: point.y - y + LABEL_HEIGHT,
     })
-    // Failing a side clear of every large dot, settle for one that only covers smaller outages
+    // Failing a side clear of every large dot, settle for one that only covers outages ranked below
     const anchor =
       anchors.find((a) => isFree(boxFor(a), index, true)) ??
       anchors.find((a) => isFree(boxFor(a), index, false))
@@ -199,7 +206,11 @@ const placeLabels = () => {
     L.marker(latLng, {
       icon: L.divIcon({
         className: 'outage-label',
-        html: `<span>${escapeHtml(outage.location)}</span><strong>${count}</strong>`,
+        // Swatch matches the dot, so a label set apart from it still says what kind of outage it is
+        html:
+          `<i class="${outage.outageType === 'Restored' ? 'hollow' : ''}" ` +
+          `style="color: ${typeColors[outage.outageType]}"></i>` +
+          `<span>${escapeHtml(outage.location)}</span><strong>${count}</strong>`,
         iconSize: [width, LABEL_HEIGHT],
         iconAnchor: anchor,
       }),
@@ -464,5 +475,18 @@ defineExpose({ focusOutage, revealOutage, fitToOutages })
 .outage-map .outage-label strong {
   color: #ffffff;
   font-weight: 700;
+}
+
+.outage-map .outage-label i {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.outage-map .outage-label i.hollow {
+  background: none;
+  box-shadow: inset 0 0 0 2px currentColor;
 }
 </style>
