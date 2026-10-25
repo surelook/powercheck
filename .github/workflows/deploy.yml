@@ -6,9 +6,10 @@ on:
       - main
   schedule:
     - cron: '*/15 * * * *'
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -40,6 +41,33 @@ jobs:
     # postinstall fetches the outage data baked into the build
     - name: Install dependencies
       run: npm ci
+
+    - name: Check out history
+      id: archive
+      continue-on-error: true
+      run: |
+        if git fetch --depth=1 origin history; then
+          git worktree add -B history data/archive FETCH_HEAD
+        else
+          git worktree add --orphan -b history data/archive
+        fi
+
+    - name: Record history
+      id: record
+      if: steps.archive.outcome == 'success'
+      continue-on-error: true
+      run: npm run history
+
+    - name: Push history
+      if: steps.record.outcome == 'success'
+      continue-on-error: true
+      working-directory: data/archive
+      run: |
+        git add -A
+        git -c user.name='github-actions[bot]' \
+          -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+          commit --quiet -m "Snapshot $(date -u +%FT%TZ)"
+        git push --quiet origin history
 
     - name: Build
       run: npm run build
