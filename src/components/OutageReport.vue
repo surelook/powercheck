@@ -2,11 +2,14 @@
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/solid'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { parseDate } from '../util/parseDate.ts'
+import { hasHistory } from '../util/history.ts'
+import HistoryTimeline from './HistoryTimeline.vue'
 import OutageItem from './OutageItem.vue'
 import OutageMap, { type MapPadding } from './OutageMap.vue'
 import RelativeDate from './RelativeDate.vue'
 import SummaryValue from './SummaryValue.vue'
 import type { OutageDetail } from '../types/outage'
+import type { HistorySnapshot } from '../types/history'
 import type { PlannerGroup } from '@/types/planner-group.js'
 
 const activeTypes = ref<string[]>(['Fault', 'Planned', 'Restored'])
@@ -17,9 +20,12 @@ const selectedId = ref<string | null>(null)
 // Set by clicking a marker; narrows the list to that one outage
 const mapFilterId = ref<string | null>(null)
 const collapsed = ref(!window.matchMedia('(min-width: 768px)').matches)
+const snapshot = ref<HistorySnapshot | null>(null)
 
 const mapRef = ref<InstanceType<typeof OutageMap>>()
 const panelRef = ref<HTMLElement>()
+const timelineRef = ref<HTMLElement>()
+const sheetHeight = ref(0)
 const mapPadding = ref<MapPadding>({ topLeft: [16, 16], bottomRight: [16, 16] })
 
 let wasSideDocked: boolean | null = null
@@ -29,9 +35,14 @@ const updateMapPadding = () => {
   const panel = panelRef.value?.getBoundingClientRect()
   if (!panel) return
   const isSideDocked = panel.width < window.innerWidth * 0.8
+  sheetHeight.value = isSideDocked ? 0 : window.innerHeight - panel.top
+  // Height rather than position, which can lag the sheet
+  const timelineSpace = timelineRef.value?.offsetHeight
+    ? timelineRef.value.offsetHeight + (isSideDocked ? 16 : 8)
+    : 0
   mapPadding.value = isSideDocked
-    ? { topLeft: [panel.right + 24, 24], bottomRight: [24, 24] }
-    : { topLeft: [24, 24], bottomRight: [24, window.innerHeight - panel.top + 24] }
+    ? { topLeft: [panel.right + 24, 24], bottomRight: [24, timelineSpace + 24] }
+    : { topLeft: [24, 24], bottomRight: [24, sheetHeight.value + timelineSpace + 24] }
 
   // The panel jumped edges (e.g. phone rotated), so re-frame for the new free area
   if (wasSideDocked !== null && wasSideDocked !== isSideDocked) reframeMap()
@@ -49,6 +60,7 @@ let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
   resizeObserver = new ResizeObserver(updateMapPadding)
   if (panelRef.value) resizeObserver.observe(panelRef.value)
+  if (timelineRef.value) resizeObserver.observe(timelineRef.value)
   window.addEventListener('resize', updateMapPadding)
   updateMapPadding()
   // The map mounted before the panel was measured, so fit again now padding is known
@@ -81,8 +93,11 @@ const buildDate = computed(() => {
   return new Date(__BUILD_DATE__)
 })
 
+const outages = computed(() => snapshot.value?.outages ?? props.outages)
+const asOf = computed(() => snapshot.value?.at ?? buildDate.value)
+
 const numberCustomersAffected = computed(() => {
-  return props.outages
+  return outages.value
     .filter((outage) => outage.outageType === 'Fault')
     .reduce((acc, curr) => {
       return acc + curr.numCustAffected
@@ -90,7 +105,7 @@ const numberCustomersAffected = computed(() => {
 })
 
 const numberCustomersAffectedPlanned = computed(() => {
-  return props.outages
+  return outages.value
     .filter((outage) => outage.outageType === 'Planned')
     .reduce((acc, curr) => {
       return acc + curr.numCustAffected
@@ -98,15 +113,15 @@ const numberCustomersAffectedPlanned = computed(() => {
 })
 
 const activeFaults = computed(() => {
-  return props.outages.filter((outage) => outage.outageType === 'Fault')
+  return outages.value.filter((outage) => outage.outageType === 'Fault')
 })
 
 const activePlanned = computed(() => {
-  return props.outages.filter((outage) => outage.outageType === 'Planned')
+  return outages.value.filter((outage) => outage.outageType === 'Planned')
 })
 
 const newestOutage = computed(() => {
-  const filteredOutages = props.outages.filter((outage) => outage.outageType !== 'Restored')
+  const filteredOutages = outages.value.filter((outage) => outage.outageType !== 'Restored')
 
   if (filteredOutages.length === 0) {
     return
@@ -118,7 +133,7 @@ const newestOutage = computed(() => {
 })
 
 const mostCustomersAffected = computed(() => {
-  const filteredOutages = props.outages.filter((outage) => outage.outageType !== 'Restored')
+  const filteredOutages = outages.value.filter((outage) => outage.outageType !== 'Restored')
 
   if (filteredOutages.length === 0) {
     return
@@ -131,7 +146,7 @@ const mostCustomersAffected = computed(() => {
 
 // Kept separate from sorting so re-sorting doesn't refit the map
 const visibleOutages = computed(() => {
-  let filtered = props.outages
+  let filtered = outages.value
 
   // Apply search filter
   if (search.value) {
@@ -193,11 +208,13 @@ const listedOutages = computed(() => {
   return sortedOutages.value.filter((outage) => outage.outageId === mapFilterId.value)
 })
 
-watch(visibleOutages, (outages) => {
-  mapFilterId.value = null
-  if (selectedId.value && !outages.some((outage) => outage.outageId === selectedId.value)) {
-    selectedId.value = null
-  }
+watch([search, activeTypes, plannerGroupFilter], () => (mapFilterId.value = null))
+
+watch(visibleOutages, (visible) => {
+  const isVisible = (outageId: string | null) =>
+    visible.some((outage) => outage.outageId === outageId)
+  if (!isVisible(mapFilterId.value)) mapFilterId.value = null
+  if (!isVisible(selectedId.value)) selectedId.value = null
 })
 
 const selectFromMap = async (outageId: string | null) => {
@@ -243,7 +260,9 @@ const getToggleFilterClass = (type: string) => {
     >
       <div class="flex shrink-0 items-start justify-between gap-4 p-4 pb-2">
         <div class="text-gray-400 text-xs">
-          Updated <RelativeDate :date="buildDate" /> from
+          <template v-if="snapshot">Recorded <RelativeDate :date="snapshot.at" /></template>
+          <template v-else>Updated <RelativeDate :date="buildDate" /></template>
+          from
           <a target="_blank" href="https://powercheck.esbnetworks.ie/">ESB Networks PowerCheck</a>
         </div>
         <button
@@ -384,6 +403,15 @@ const getToggleFilterClass = (type: string) => {
       </template>
     </aside>
 
+    <div
+      v-if="hasHistory"
+      ref="timelineRef"
+      class="pointer-events-none absolute inset-x-2 z-[1000] bottom-[calc(var(--sheet-height)+0.5rem)] md:right-4 md:bottom-4 md:left-[calc(26rem+2rem)]"
+      :style="{ '--sheet-height': `${sheetHeight}px` }"
+    >
+      <HistoryTimeline v-model="snapshot" />
+    </div>
+
     <OutageMap
       ref="mapRef"
       class="absolute inset-0"
@@ -391,6 +419,7 @@ const getToggleFilterClass = (type: string) => {
       :selected-id="selectedId"
       :planner-group="plannerGroupFilter"
       :padding="mapPadding"
+      :as-of="asOf"
       @select="selectFromMap"
     />
   </div>

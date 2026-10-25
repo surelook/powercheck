@@ -12,6 +12,7 @@ const props = defineProps<{
   selectedId: string | null
   plannerGroup: string | null
   padding: MapPadding
+  asOf: Date
 }>()
 
 const emit = defineEmits<{ select: [outageId: string | null] }>()
@@ -377,10 +378,11 @@ onBeforeUnmount(() => {
 
 // Keyed on IDs so keystrokes that don't change the matching set leave the map alone
 watch(
-  () => props.outages.map((outage) => outage.outageId).join(','),
-  () => {
+  () => [props.outages.map((outage) => outage.outageId).join(','), props.asOf] as const,
+  ([, asOf], [, previousAsOf]) => {
     renderMarkers()
-    if (props.plannerGroup === areaFor) scheduleFit()
+    // Don't refit while scrubbing history
+    if (asOf === previousAsOf && props.plannerGroup === areaFor) scheduleFit()
   },
 )
 
