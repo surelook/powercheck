@@ -275,8 +275,10 @@ const getToggleFilterClass = (type: string) => {
           :aria-label="collapsed ? 'Show outage list' : 'Hide outage list'"
           class="shrink-0 cursor-pointer rounded-full p-1 text-gray-400 hover:bg-gray-700 hover:text-white"
         >
-          <ChevronUpIcon v-if="collapsed" class="w-5" />
-          <ChevronDownIcon v-else class="w-5" />
+          <!-- Points the way the panel will move: up from the bottom on phones, down from the top
+               on wider screens -->
+          <ChevronUpIcon class="w-5" :class="collapsed ? 'md:hidden' : 'max-md:hidden'" />
+          <ChevronDownIcon class="w-5" :class="collapsed ? 'max-md:hidden' : 'md:hidden'" />
         </button>
       </div>
 
