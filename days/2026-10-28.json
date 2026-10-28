@@ -5,8 +5,10 @@
 {"outageId":"2872271","outageType":"Restored","point":{"c":"53.244466817016,-6.741202430625"},"location":"Sallins","plannerGroup":"Dublin South","numCustAffected":17,"startTime":"27/10/2026 19:03","estRestoreTime":"27/10/2026 21:00","statusMessage":"","restoreTime":"27/10/2026 22:14","plannedOutageReason":""},
 {"outageId":"2872278","outageType":"Fault","point":{"c":"53.1936,-6.10059"},"location":"Bray","plannerGroup":"Dublin South","numCustAffected":105,"startTime":"27/10/2026 19:28","estRestoreTime":"27/10/2026 20:00","statusMessage":"We apologise for the loss of supply.  We are currently working to repair a fault affecting your premises and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""},
 {"outageId":"2872293","outageType":"Fault","point":{"c":"52.55718,-8.97393"},"location":"Rathkeale","plannerGroup":"Newcastlewest","numCustAffected":86,"startTime":"27/10/2026 16:33","estRestoreTime":"28/10/2026 16:00","statusMessage":"We apologise for the loss of supply.  We are currently working to repair a fault affecting your premises and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""},
-{"outageId":"2872302","outageType":"Restored","point":{"c":"53.103075295442,-9.653250110176"},"location":"Carraroe","plannerGroup":"Galway","numCustAffected":579,"startTime":"27/10/2026 21:42","estRestoreTime":"27/10/2026 22:45","statusMessage":"","restoreTime":"27/10/2026 21:59","plannedOutageReason":""}
+{"outageId":"2872302","outageType":"Restored","point":{"c":"53.103075295442,-9.653250110176"},"location":"Carraroe","plannerGroup":"Galway","numCustAffected":579,"startTime":"27/10/2026 21:42","estRestoreTime":"27/10/2026 22:45","statusMessage":"","restoreTime":"27/10/2026 21:59","plannedOutageReason":""},
+{"outageId":"2872312","outageType":"Fault","point":{"c":"52.18601,-9.04134"},"location":"Newmarket (Sr)","plannerGroup":"Killarney,Newcastlewest","numCustAffected":43,"startTime":"28/10/2026 00:55","estRestoreTime":"28/10/2026 02:45","statusMessage":"We apologise for the loss of supply. We are currently working to repair a fault affecting your premises and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""}
 ],
 "snapshots":[
-{"at":"2026-10-28T00:12:27Z","outages":[0,1,2,3,4,5,6]}
+{"at":"2026-10-28T00:12:27Z","outages":[0,1,2,3,4,5,6]},
+{"at":"2026-10-28T05:36:02Z","outages":[4,5,7]}
 ]}
