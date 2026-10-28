@@ -1,0 +1,12 @@
+{"outages":[
+{"outageId":"2869179","outageType":"Restored","point":{"c":"53.272393238676,-6.51573769015"},"location":"Saggart","plannerGroup":"Dublin North,Dublin South","numCustAffected":241,"startTime":"24/10/2026 23:16","estRestoreTime":"25/10/2026 00:30","statusMessage":"","restoreTime":"27/10/2026 22:54","plannedOutageReason":""},
+{"outageId":"2871244","outageType":"Restored","point":{"c":"53.346615482573,-6.537992116624"},"location":"Celbridge","plannerGroup":"Dublin North","numCustAffected":80,"startTime":"26/10/2026 16:34","estRestoreTime":"27/10/2026 19:45","statusMessage":"","restoreTime":"27/10/2026 21:14","plannedOutageReason":""},
+{"outageId":"2872265","outageType":"Restored","point":{"c":"54.373497554653,-6.949374035829"},"location":"Emyvale","plannerGroup":"Cavan","numCustAffected":14,"startTime":"27/10/2026 18:43","estRestoreTime":"27/10/2026 20:45","statusMessage":"","restoreTime":"27/10/2026 20:14","plannedOutageReason":""},
+{"outageId":"2872271","outageType":"Restored","point":{"c":"53.244466817016,-6.741202430625"},"location":"Sallins","plannerGroup":"Dublin South","numCustAffected":17,"startTime":"27/10/2026 19:03","estRestoreTime":"27/10/2026 21:00","statusMessage":"","restoreTime":"27/10/2026 22:14","plannedOutageReason":""},
+{"outageId":"2872278","outageType":"Fault","point":{"c":"53.1936,-6.10059"},"location":"Bray","plannerGroup":"Dublin South","numCustAffected":105,"startTime":"27/10/2026 19:28","estRestoreTime":"27/10/2026 20:00","statusMessage":"We apologise for the loss of supply.  We are currently working to repair a fault affecting your premises and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""},
+{"outageId":"2872293","outageType":"Fault","point":{"c":"52.55718,-8.97393"},"location":"Rathkeale","plannerGroup":"Newcastlewest","numCustAffected":86,"startTime":"27/10/2026 16:33","estRestoreTime":"28/10/2026 16:00","statusMessage":"We apologise for the loss of supply.  We are currently working to repair a fault affecting your premises and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""},
+{"outageId":"2872302","outageType":"Restored","point":{"c":"53.103075295442,-9.653250110176"},"location":"Carraroe","plannerGroup":"Galway","numCustAffected":579,"startTime":"27/10/2026 21:42","estRestoreTime":"27/10/2026 22:45","statusMessage":"","restoreTime":"27/10/2026 21:59","plannedOutageReason":""}
+],
+"snapshots":[
+{"at":"2026-10-28T00:12:27Z","outages":[0,1,2,3,4,5,6]}
+]}
