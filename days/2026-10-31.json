@@ -5,8 +5,10 @@
 {"outageId":"2873760","outageType":"Restored","point":{"c":"53.337031981838,-6.272480712963"},"location":"Newmarket (Dr)","plannerGroup":"Dublin Central","numCustAffected":106,"startTime":"30/10/2026 09:46","estRestoreTime":"30/10/2026 19:45","statusMessage":"","restoreTime":"30/10/2026 23:16","plannedOutageReason":""},
 {"outageId":"2873907","outageType":"Restored","point":{"c":"53.337619992462,-6.270128741364"},"location":"Newmarket (Dr)","plannerGroup":"Dublin Central","numCustAffected":71,"startTime":"30/10/2026 12:46","estRestoreTime":"30/10/2026 19:45","statusMessage":"","restoreTime":"30/10/2026 23:17","plannedOutageReason":""},
 {"outageId":"2874146","outageType":"Restored","point":{"c":"53.052862451556,-6.693691599727"},"location":"Kilcullen","plannerGroup":"Dublin South,Portlaoise,Tullamore","numCustAffected":43,"startTime":"30/10/2026 20:18","estRestoreTime":"30/10/2026 22:30","statusMessage":"","restoreTime":"30/10/2026 22:15","plannedOutageReason":""},
-{"outageId":"2874158","outageType":"Planned","point":{"c":"53.85443,-6.41771"},"location":"Dunleer","plannerGroup":"Drogheda,Dundalk","numCustAffected":14,"startTime":"30/10/2026 23:26","estRestoreTime":"31/10/2026 06:00","statusMessage":"We apologise for the loss of supply.  We are carrying out essential improvement / maintenance works in your area and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""}
+{"outageId":"2874158","outageType":"Planned","point":{"c":"53.85443,-6.41771"},"location":"Dunleer","plannerGroup":"Drogheda,Dundalk","numCustAffected":14,"startTime":"30/10/2026 23:26","estRestoreTime":"31/10/2026 06:00","statusMessage":"We apologise for the loss of supply.  We are carrying out essential improvement / maintenance works in your area and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""},
+{"outageId":"2874159","outageType":"Fault","point":{"c":"51.95467,-8.53899"},"location":"Whitechurch","plannerGroup":"Bandon,Fermoy","numCustAffected":73,"startTime":"30/10/2026 23:49","estRestoreTime":"31/10/2026 10:15","statusMessage":"We apologise for the loss of supply.  We are currently working to repair a fault affecting your premises and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""}
 ],
 "snapshots":[
-{"at":"2026-10-31T00:04:13Z","outages":[0,1,2,3,4,5,6]}
+{"at":"2026-10-31T00:04:13Z","outages":[0,1,2,3,4,5,6]},
+{"at":"2026-10-31T05:30:34Z","outages":[0,1,2,6,7]}
 ]}
