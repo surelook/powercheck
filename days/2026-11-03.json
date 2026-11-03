@@ -1,0 +1,6 @@
+{"outages":[
+{"outageId":"2874873","outageType":"Planned","point":{"c":"54.39392,-8.1246"},"location":"Manorhamilton","plannerGroup":"Sligo","numCustAffected":84,"startTime":"02/11/2026 11:22","estRestoreTime":"02/11/2026 17:30","statusMessage":"We apologise for the loss of supply.  We are carrying out essential improvement/maintenance works in your area and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":"IMPROVE QUALITY OF SUPPLY"}
+],
+"snapshots":[
+{"at":"2026-11-03T01:54:39Z","outages":[0]}
+]}
