@@ -15,5 +15,6 @@
 {"outageId":"2875874","outageType":"Restored","point":{"c":"54.800343920233,-7.772911586648"},"location":"Stranorlar","plannerGroup":"Killybegs,Letterkenny","numCustAffected":268,"startTime":"03/11/2026 22:58","estRestoreTime":"04/11/2026 02:30","statusMessage":"","restoreTime":"03/11/2026 23:44","plannedOutageReason":""}
 ],
 "snapshots":[
-{"at":"2026-11-04T01:53:14Z","outages":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]}
+{"at":"2026-11-04T01:53:14Z","outages":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]},
+{"at":"2026-11-04T08:14:30Z","outages":[0,1,2,3]}
 ]}
