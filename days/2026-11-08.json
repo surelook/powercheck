@@ -1,0 +1,8 @@
+{"outages":[
+{"outageId":"2874873","outageType":"Planned","point":{"c":"54.39392,-8.1246"},"location":"Manorhamilton","plannerGroup":"Sligo","numCustAffected":84,"startTime":"02/11/2026 11:22","estRestoreTime":"02/11/2026 17:30","statusMessage":"We apologise for the loss of supply.  We are carrying out essential improvement/maintenance works in your area and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":"IMPROVE QUALITY OF SUPPLY"},
+{"outageId":"2877031","outageType":"Planned","point":{"c":"54.10052,-6.66319"},"location":"Castleblayney","plannerGroup":"Cavan","numCustAffected":12,"startTime":"06/11/2026 09:56","estRestoreTime":"06/11/2026 16:00","statusMessage":"We apologise for the loss of supply.  We are carrying out essential improvement/maintenance works in your area and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":"UPGRADE THE NETWORK"},
+{"outageId":"2877485","outageType":"Fault","point":{"c":"53.29414,-6.68755"},"location":"Sallins","plannerGroup":"Dublin South","numCustAffected":147,"startTime":"07/11/2026 08:43","estRestoreTime":"07/11/2026 22:30","statusMessage":"We apologise for the loss of supply.  We are currently working to repair a fault affecting your premises and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""}
+],
+"snapshots":[
+{"at":"2026-11-08T01:40:34Z","outages":[0,1,2]}
+]}
