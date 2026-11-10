@@ -1,0 +1,11 @@
+{"outages":[
+{"outageId":"2874873","outageType":"Planned","point":{"c":"54.39392,-8.1246"},"location":"Manorhamilton","plannerGroup":"Sligo","numCustAffected":84,"startTime":"02/11/2026 11:22","estRestoreTime":"02/11/2026 17:30","statusMessage":"We apologise for the loss of supply.  We are carrying out essential improvement/maintenance works in your area and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":"IMPROVE QUALITY OF SUPPLY"},
+{"outageId":"2878337","outageType":"Restored","point":{"c":"52.008468110034,-8.614092987297"},"location":"Whitechurch","plannerGroup":"Bandon,Fermoy","numCustAffected":298,"startTime":"09/11/2026 21:00","estRestoreTime":"10/11/2026 00:00","statusMessage":"","restoreTime":"10/11/2026 01:02","plannedOutageReason":""},
+{"outageId":"2878348","outageType":"Fault","point":{"c":"53.42615,-8.88945"},"location":"Claregalway","plannerGroup":"Galway,Tuam","numCustAffected":14,"startTime":"09/11/2026 16:24","estRestoreTime":"10/11/2026 15:30","statusMessage":"We apologise for the loss of supply.  We are currently working to repair a fault affecting your premises and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""},
+{"outageId":"2878350","outageType":"Restored","point":{"c":"52.007367362462,-8.667784602814"},"location":"Whitechurch","plannerGroup":"Bandon,Fermoy","numCustAffected":14,"startTime":"09/11/2026 20:59","estRestoreTime":"","statusMessage":"","restoreTime":"10/11/2026 00:46","plannedOutageReason":""},
+{"outageId":"2878351","outageType":"Restored","point":{"c":"52.003763591182,-8.677411012827"},"location":"Whitechurch","plannerGroup":"Bandon,Fermoy","numCustAffected":413,"startTime":"09/11/2026 20:59","estRestoreTime":"","statusMessage":"","restoreTime":"09/11/2026 22:43","plannedOutageReason":""},
+{"outageId":"2878354","outageType":"Restored","point":{"c":"54.464500760529,-8.45083773265"},"location":"Aghagad","plannerGroup":"Sligo","numCustAffected":60,"startTime":"09/11/2026 23:17","estRestoreTime":"10/11/2026 02:30","statusMessage":"","restoreTime":"10/11/2026 01:23","plannedOutageReason":""}
+],
+"snapshots":[
+{"at":"2026-11-10T02:42:06Z","outages":[0,1,2,3,4,5]}
+]}
