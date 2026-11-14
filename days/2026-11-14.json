@@ -13,5 +13,6 @@
 {"outageId":"2880313","outageType":"Restored","point":{"c":"53.474803907139,-7.83346685141"},"location":"Bushfield","plannerGroup":"Athlone","numCustAffected":35,"startTime":"13/11/2026 20:44","estRestoreTime":"14/11/2026 00:30","statusMessage":"","restoreTime":"14/11/2026 01:30","plannedOutageReason":""}
 ],
 "snapshots":[
-{"at":"2026-11-14T01:47:29Z","outages":[0,1,2,3,4,5,6,7,8,9,10,11]}
+{"at":"2026-11-14T01:47:29Z","outages":[0,1,2,3,4,5,6,7,8,9,10,11]},
+{"at":"2026-11-14T08:13:50Z","outages":[0,1,2,3,4,5]}
 ]}
