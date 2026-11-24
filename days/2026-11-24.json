@@ -1,0 +1,8 @@
+{"outages":[
+{"outageId":"2885077","outageType":"Planned","point":{"c":"52.80133,-8.36409"},"location":"Birdhill","plannerGroup":"Limerick,Roscrea,Thurles","numCustAffected":12,"startTime":"23/11/2026 10:23","estRestoreTime":"23/11/2026 15:00","statusMessage":"We apologise for the loss of supply.  We are carrying out essential improvement / maintenance works in your area and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""},
+{"outageId":"2885140","outageType":"Planned","point":{"c":"52.74273,-6.64444"},"location":"Tullow","plannerGroup":"Arklow,Kilkenny,Portlaoise","numCustAffected":23,"startTime":"23/11/2026 11:04","estRestoreTime":"","statusMessage":"We apologise for the loss of supply.  We are carrying out essential improvement/maintenance works in your area and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":"CONNECT NEW CUSTOMERS"},
+{"outageId":"2885463","outageType":"Planned","point":{"c":"52.65366,-7.25295"},"location":"Mcdonagh","plannerGroup":"Kilkenny","numCustAffected":18,"startTime":"23/11/2026 18:10","estRestoreTime":"24/11/2026 04:00","statusMessage":"We apologise for the loss of supply.  We are carrying out essential improvement / maintenance works in your area and will restore power as quickly as possible.","restoreTime":"","plannedOutageReason":""}
+],
+"snapshots":[
+{"at":"2026-11-24T05:39:57Z","outages":[0,1,2]}
+]}
